@@ -1,0 +1,1024 @@
+<title>PsyLab Practicals</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: sticky top bar with mode tabs; Units = unit rail + reading column with an animated "plate" on top; other modes centred column */
+:root{
+  --bg:#f2f3f7; --surface:#ffffff; --ink:#151a2c; --muted:#5b6278; --line:#d9dce6; --grid:#e6e8ef;
+  --cog:#2b50e0; --cog-soft:#e3e9ff; --per:#d4462f; --per-soft:#fde6e1; --hl:#ffe66b; --good:#23885a; --bad:#c43d2c;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+  --accent:var(--cog); --accent-soft:var(--cog-soft);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1120; --surface:#171b2e; --ink:#e7e9f3; --muted:#9aa1b9; --line:#2a3049; --grid:#161a2c;
+  --cog:#88a0ff; --cog-soft:#1f2850; --per:#ff8a73; --per-soft:#3a2026; --hl:#6b5a12; --good:#5fd39a; --bad:#ff8a7a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1120; --surface:#171b2e; --ink:#e7e9f3; --muted:#9aa1b9; --line:#2a3049; --grid:#161a2c;
+  --cog:#88a0ff; --cog-soft:#1f2850; --per:#ff8a73; --per-soft:#3a2026; --hl:#6b5a12; --good:#5fd39a; --bad:#ff8a7a; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+@media (max-width:520px){dl.terms{grid-template-columns:1fr;gap:2px}dl.terms dd{margin-bottom:8px}}
+body{background:var(--bg) linear-gradient(var(--grid) 1px,transparent 1px) 0 0/100% 28px;color:var(--ink);font:16px/1.6 var(--body);margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+header .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;padding-block:10px}
+.logo{font:700 1.3rem var(--display);letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.logo svg{width:26px;height:26px}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+.btn,nav button{font:700 .9rem var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 14px;border-radius:8px;cursor:pointer}
+nav button[aria-selected="true"],.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.prog{margin-left:auto;font:500 .78rem var(--mono);color:var(--muted)}
+main{padding-block:26px 70px}
+.eyebrow{font:500 .74rem var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
+h2{font:700 clamp(1.7rem,4.5vw,2.5rem)/1.1 var(--display);letter-spacing:-.02em;margin:.15em 0 .3em;text-wrap:balance}
+h3{font:700 1.15rem var(--display);margin:1.6em 0 .5em}
+h4{font:700 .95rem var(--body);margin:1.1em 0 .3em}
+mark{background:linear-gradient(transparent 55%,var(--hl) 55%);color:inherit;padding:0 2px}
+p{margin:.4em 0 .8em}
+
+.units{display:grid;grid-template-columns:240px minmax(0,1fr);gap:32px}
+.rail{display:flex;flex-direction:column;gap:2px;position:sticky;top:76px;align-self:start;max-height:calc(100vh - 90px);overflow:auto}
+.rail .grp{font:500 .7rem var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:12px 10px 4px}
+.rail button{all:unset;cursor:pointer;padding:7px 10px;border-radius:8px;display:grid;grid-template-columns:44px 1fr auto;gap:6px;font-size:.93rem;align-items:baseline}
+.rail button .n{font:500 .72rem var(--mono);color:var(--muted)}
+.rail button:hover{background:var(--surface)}
+.rail button[aria-current="true"]{background:var(--surface);box-shadow:inset 3px 0 0 var(--c);font-weight:700}
+.rail button:focus-visible{outline:3px solid var(--cog)}
+.rail .tick{color:var(--good)}
+article{min-width:0}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:10px 0 20px}
+.plate svg{display:block;width:100%;height:auto;max-height:300px}
+.plate .cap{font-size:.85rem;color:var(--muted);padding:8px 14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.reading{max-width:70ch}
+ul.pts{padding-left:1.15em;display:grid;gap:5px;margin:.3em 0}
+dl.terms{display:grid;grid-template-columns:minmax(130px,max-content) 1fr;gap:6px 18px;margin:.4em 0}
+dl.terms dt{font-weight:700;color:var(--accent)}
+dl.terms dd{margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:.4em 0}
+.chip{font:500 .78rem var(--mono);background:var(--accent-soft);color:var(--accent);padding:3px 9px;border-radius:99px}
+.exp{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 20px 16px;margin:24px 0}
+.exp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 24px}
+.exp h4{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.exp ol{padding-left:1.2em;margin:.2em 0;display:grid;gap:4px}
+.formula{font:500 .92rem var(--mono);background:var(--accent-soft);color:var(--ink);padding:8px 12px;border-radius:8px;display:inline-block;margin:4px 0}
+.lab{border:2px dashed var(--accent);border-radius:14px;padding:6px 20px 18px;margin:24px 0;background:color-mix(in srgb,var(--accent-soft) 40%,var(--surface))}
+.lab .stage{min-height:120px;display:grid;place-items:center;text-align:center;font:700 clamp(1.6rem,6vw,2.6rem) var(--display);letter-spacing:.08em;background:var(--surface);border-radius:10px;border:1px solid var(--line);margin:10px 0;padding:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input,select,textarea{font:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+textarea{width:100%;min-height:90px}
+.cuegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;width:100%}
+.cuegrid label{display:grid;gap:3px;font:500 .75rem var(--mono);color:var(--accent);text-align:left}
+.out{font-size:.95rem;margin-top:8px}
+.out b{color:var(--accent)}
+.verdict{display:inline-block;font:700 .9rem var(--body);padding:4px 12px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.tip{border-left:4px solid var(--hl);background:var(--surface);padding:10px 14px;border-radius:0 10px 10px 0;margin:20px 0;font-size:.95rem}
+.done-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;padding-top:18px;border-top:1px solid var(--line)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:.5em 0}
+table{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 12px;border-bottom:1px solid var(--line)}
+th{font:500 .7rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:6px 12px;font:700 .85rem var(--body)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.seg button:focus-visible{outline:3px solid var(--hl)}
+
+/* svg art */
+.art text{font-family:var(--body);fill:var(--ink)}
+.art .mono{font-family:var(--mono)}
+.art .box{fill:var(--surface);stroke:var(--line);stroke-width:2}
+.art .acc{fill:var(--accent)} .art .accs{stroke:var(--accent)}
+.art .soft{fill:var(--accent-soft)}
+.art .mut{fill:var(--muted)}
+.art .ln{stroke:var(--line);stroke-width:2;fill:none}
+.flow{animation:flow 3.2s linear infinite}
+@keyframes flow{0%{transform:translateX(0);opacity:0}8%{opacity:1}92%{opacity:1}100%{transform:translateX(var(--d,500px));opacity:0}}
+.pulse{animation:pulse 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.18);opacity:1}}
+.draw{stroke-dasharray:900;stroke-dashoffset:900;animation:draw 3.5s ease forwards infinite}
+@keyframes draw{0%{stroke-dashoffset:900}60%,100%{stroke-dashoffset:0}}
+.bob{animation:bob 4s ease-in-out infinite;transform-box:fill-box}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+/* attention filter states */
+.att .un{animation:unB 3.2s linear infinite}
+@keyframes unB{0%{transform:translateX(0);opacity:0}8%{opacity:1}40%{transform:translateX(230px);opacity:1}46%{transform:translateX(240px);opacity:0}100%{opacity:0;transform:translateX(240px)}}
+.att.treisman .un{animation:unT 3.2s linear infinite}
+@keyframes unT{0%{transform:translateX(0);opacity:0}8%{opacity:1}40%{transform:translateX(230px);opacity:1}46%{opacity:.25}92%{opacity:.25}100%{transform:translateX(520px);opacity:0}}
+.att.treisman .name,.att.late .un{animation:flow 3.2s linear infinite;--d:520px}
+.att .filt{transition:transform .4s}
+.att.late .filt{transform:translateX(250px)}
+
+/* cards & quiz */
+.center{max-width:660px;margin:0 auto}
+.card{perspective:1200px;height:300px;cursor:pointer;margin:16px 0}
+.card-in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.card.flip .card-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px;display:flex;flex-direction:column;justify-content:center;gap:10px;overflow:auto}
+.face.back{transform:rotateY(180deg);border-color:var(--ink)}
+.face .q{font:700 1.4rem/1.3 var(--display);text-wrap:balance}
+.hint{font-size:.85rem;color:var(--muted)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);transition:width .3s}
+.opts{display:grid;gap:8px;margin:14px 0}
+.opts button{all:unset;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.opts button:hover:not(:disabled){border-color:var(--ink)}
+.opts button:focus-visible{outline:3px solid var(--cog)}
+.opts button.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 15%,var(--surface))}
+.opts button.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 15%,var(--surface))}
+.score{font:700 3.4rem var(--display);font-variant-numeric:tabular-nums}
+.sec{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 22px 18px;margin:16px 0;scroll-margin-top:calc(var(--hh,64px) + 64px);min-width:0}
+.sec>h3{margin-top:.3em}
+.secbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hh,64px));z-index:4;display:flex;gap:6px;overflow-x:auto;padding:8px 0;background:var(--bg);margin:0 0 4px}
+.secbar button{all:unset;cursor:pointer;white-space:nowrap;font:700 .82rem var(--body);padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface)}
+.secbar button:hover{border-color:var(--accent);color:var(--accent)}
+.secbar button:focus-visible{outline:3px solid var(--accent)}
+blockquote{margin:.4em 0;padding:10px 16px;border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 10px 10px 0;font-style:italic}
+ol.steps{padding-left:1.3em;display:grid;gap:6px}
+.rlist{display:grid;gap:10px}
+.rq{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.rq:first-child{border-top:0}
+.rq .rn{font:700 1.3rem var(--display);color:var(--accent)}
+.rq .say{font:700 1.02rem/1.45 var(--body);margin:6px 0 2px}
+.rq .hint{margin:0}
+td.mono{font-family:var(--mono)}
+#pick{margin-top:14px}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-top:16px}
+.rcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px;transition:transform .25s,box-shadow .25s}
+.rcard.on{box-shadow:0 0 0 3px var(--hl);transform:translateY(-3px)}
+.rcard h3{margin:0;font-size:1.2rem}
+.rcard .say{font:700 1.02rem/1.45 var(--body)}
+.rcard .lbl{font:500 .68rem var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.rcard p{margin:0;font-size:.93rem}
+.rapport-head{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between}
+
+@media (max-width:780px){
+  .units{grid-template-columns:1fr;gap:12px}
+  .rail{position:static;flex-direction:row;overflow-x:auto;max-height:none;padding-bottom:6px}
+  .rail .grp{display:none}
+  .rail button{white-space:nowrap;border:1px solid var(--line);grid-template-columns:auto auto auto;background:var(--surface)}
+  .prog{margin-left:0;width:100%}
+  header{position:static}
+  .card{height:340px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header><div class="wrap">
+  <div class="logo"><svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="9" cy="13" r="7" fill="var(--cog)"/><circle cx="17" cy="13" r="7" fill="var(--per)" opacity=".85"/></svg>PsyLab</div>
+  <nav role="tablist" aria-label="Study modes">
+    <button role="tab" data-mode="intro" aria-selected="true">Viva intros</button>
+    <button role="tab" data-mode="exp">Experiments</button>
+    <button role="tab" data-mode="rapport">Rapport</button>
+    <button role="tab" data-mode="cards">Flashcards</button>
+    <button role="tab" data-mode="quiz">Viva quiz</button>
+  </nav>
+  <div class="prog" id="prog"></div>
+</div></header>
+
+<main class="wrap">
+  <section id="study" class="units"><div class="rail" id="rail"></div><article id="unit"></article></section>
+  <section id="cards" class="center" hidden></section>
+  <section id="quiz" class="center" hidden></section>
+  <section id="rapport" hidden></section>
+</main>
+
+<script>
+/* ---------- Animated plates (SVG) ---------- */
+const ART = {
+cognition:()=>`<svg class="art att" id="attsvg" viewBox="0 0 640 260" role="img" aria-label="Attention filter models animation">
+ <text x="20" y="34" class="mono mut" font-size="12">LEFT EAR · attended</text><text x="20" y="184" class="mono mut" font-size="12">RIGHT EAR · unattended</text>
+ <rect x="150" y="70" width="120" height="120" rx="12" class="box"/><text x="210" y="125" text-anchor="middle" font-size="14" font-weight="700">Sensory</text><text x="210" y="143" text-anchor="middle" font-size="14" font-weight="700">buffer</text>
+ <g class="filt"><rect x="300" y="60" width="16" height="140" rx="6" class="acc"/><text x="308" y="226" text-anchor="middle" class="mono" font-size="12" fill="var(--accent)">FILTER</text></g>
+ <rect x="350" y="70" width="130" height="120" rx="12" class="box"/><text x="415" y="125" text-anchor="middle" font-size="14" font-weight="700">Meaning</text><text x="415" y="143" text-anchor="middle" font-size="14" font-weight="700">analysis</text>
+ <rect x="510" y="95" width="110" height="70" rx="12" class="soft"/><text x="565" y="135" text-anchor="middle" font-size="14" font-weight="700">Response</text>
+ <circle class="flow" style="--d:520px" cx="40" cy="60" r="9" fill="var(--cog)"/><circle class="flow" style="--d:520px;animation-delay:1.1s" cx="40" cy="60" r="9" fill="var(--cog)"/><circle class="flow" style="--d:520px;animation-delay:2.2s" cx="40" cy="60" r="9" fill="var(--cog)"/>
+ <circle class="un" cx="40" cy="205" r="9" fill="var(--per)"/><circle class="un" style="animation-delay:1.6s" cx="40" cy="205" r="9" fill="var(--per)"/>
+ <g class="un name" style="animation-delay:.8s"><rect x="22" y="194" width="58" height="22" rx="11" fill="var(--per)"/><text x="51" y="210" text-anchor="middle" font-size="11" font-weight="700" fill="var(--surface)">your name</text></g>
+</svg>`,
+memory:()=>`<svg class="art" viewBox="0 0 640 260" role="img" aria-label="Atkinson-Shiffrin model with information flowing and a serial position curve">
+ <rect x="20" y="40" width="150" height="80" rx="12" class="box"/><text x="95" y="76" text-anchor="middle" font-weight="700" font-size="15">Sensory</text><text x="95" y="96" text-anchor="middle" class="mono mut" font-size="11">≤ 2 s · huge</text>
+ <rect x="245" y="40" width="150" height="80" rx="12" class="box"/><text x="320" y="76" text-anchor="middle" font-weight="700" font-size="15">STM</text><text x="320" y="96" text-anchor="middle" class="mono mut" font-size="11">20–30 s · 7±2</text>
+ <rect x="470" y="40" width="150" height="80" rx="12" class="soft"/><text x="545" y="76" text-anchor="middle" font-weight="700" font-size="15">LTM</text><text x="545" y="96" text-anchor="middle" class="mono mut" font-size="11">years · unlimited</text>
+ <path d="M320 40 C 280 0, 360 0, 320 40" class="ln" stroke="var(--accent)"/><text x="320" y="16" text-anchor="middle" class="mono" font-size="11" fill="var(--accent)">rehearsal</text>
+ <circle class="flow" style="--d:460px" cx="95" cy="140" r="7" fill="var(--accent)"/><circle class="flow" style="--d:460px;animation-delay:1.6s" cx="95" cy="140" r="7" fill="var(--accent)"/>
+ <circle class="flow" style="--d:180px;animation-delay:.8s" cx="95" cy="140" r="7" fill="var(--muted)"/>
+ <text x="20" y="168" class="mono mut" font-size="11">attention → encoding → storage → retrieval</text>
+ <line x1="330" y1="245" x2="620" y2="245" class="ln"/><line x1="330" y1="175" x2="330" y2="245" class="ln"/>
+ <path class="draw" d="M335 185 C 380 230, 420 238, 480 238 S 580 236, 615 182" fill="none" stroke="var(--per)" stroke-width="4" stroke-linecap="round"/>
+ <text x="340" y="178" class="mono" font-size="11" fill="var(--per)">primacy</text><text x="560" y="178" class="mono" font-size="11" fill="var(--per)">recency</text>
+</svg>`,
+cueing:()=>{const n=[[320,130,"FRUIT"],[180,60,"apple"],[460,60,"mango"],[150,200,"grape"],[490,200,"banana"],[320,235,"orange"],[60,130,"red"],[580,130,"yellow"]];
+ return `<svg class="art" viewBox="0 0 640 260" role="img" aria-label="Spreading activation from a category cue">
+ ${n.slice(1).map(([x,y])=>`<line x1="320" y1="130" x2="${x}" y2="${y}" class="ln"/>`).join("")}
+ ${n.map(([x,y,t],i)=>`<g><circle class="pulse" style="animation-delay:${i?0.25*i:0}s" cx="${x}" cy="${y}" r="${i?28:40}" fill="${i?'var(--accent-soft)':'var(--accent)'}"/><text x="${x}" y="${y+5}" text-anchor="middle" font-size="${i?13:15}" font-weight="700" ${i?'':'fill="var(--surface)"'}>${t}</text></g>`).join("")}
+ <text x="16" y="250" class="mono mut" font-size="11">cue lights up → activation spreads → target recalled</text></svg>`},
+chunking:()=>{const L="BGHIEKMON".split("");return `<svg class="art" viewBox="0 0 640 220" role="img" aria-label="Nine letters regroup into three chunks">
+ <style>@keyframes ch{0%,25%{transform:translateX(0)}50%,85%{transform:translateX(var(--x))}100%{transform:translateX(0)}}.lt{animation:ch 5s ease-in-out infinite}</style>
+ ${L.map((c,i)=>{const g=Math.floor(i/3),x=60+i*58,shift=(g-1)*36;return `<g class="lt" style="--x:${shift}px"><rect x="${x-22}" y="70" width="44" height="56" rx="8" class="${g===1?'soft':'box'}"/><text x="${x}" y="108" text-anchor="middle" font-size="26" font-weight="700" class="mono">${c}</text></g>`}).join("")}
+ <text x="320" y="170" text-anchor="middle" font-size="15">9 separate items → <tspan font-weight="700" fill="var(--accent)">3 chunks</tspan> (BGH · IEK · MON)</text>
+ <text x="320" y="196" text-anchor="middle" class="mono mut" font-size="11">STM holds 7 ± 2 chunks, not 7 ± 2 bits</text></svg>`},
+miq:()=>{const m=[["Visual","see"],["Auditory","hear"],["Gustatory","taste"],["Olfactory","smell"],["Tactual","touch"],["Organic","body"]];
+ return `<svg class="art" viewBox="0 0 640 240" role="img" aria-label="Six imagery modalities around a mind">
+ <circle cx="320" cy="120" r="46" class="acc"/><text x="320" y="117" text-anchor="middle" fill="var(--surface)" font-weight="700" font-size="14">mental</text><text x="320" y="134" text-anchor="middle" fill="var(--surface)" font-weight="700" font-size="14">image</text>
+ ${m.map(([a,b],i)=>{const t=i/6*Math.PI*2-Math.PI/2,x=320+Math.cos(t)*200,y=120+Math.sin(t)*92;return `<line x1="320" y1="120" x2="${x}" y2="${y}" class="ln"/><g class="pulse" style="animation-delay:${i*.4}s"><circle cx="${x}" cy="${y}" r="30" class="soft"/></g><text x="${x}" y="${y-2}" text-anchor="middle" font-size="12" font-weight="700">${a}</text><text x="${x}" y="${y+13}" text-anchor="middle" class="mono mut" font-size="10">${b}</text>`}).join("")}
+ </svg>`},
+solat:()=>`<svg class="art" viewBox="0 0 640 250" role="img" aria-label="Left and right hemispheres with corpus callosum">
+ <path d="M318 30 C 200 20, 120 70, 130 140 C 140 210, 230 230, 318 220 Z" fill="var(--cog-soft)" stroke="var(--cog)" stroke-width="3"/>
+ <path d="M322 30 C 440 20, 520 70, 510 140 C 500 210, 410 230, 322 220 Z" fill="var(--per-soft)" stroke="var(--per)" stroke-width="3"/>
+ <rect x="296" y="112" width="48" height="16" rx="8" class="acc"/><circle class="flow" style="--d:40px" cx="300" cy="120" r="5" fill="var(--surface)"/>
+ <text x="220" y="90" text-anchor="middle" font-weight="700" fill="var(--cog)">LEFT (L)</text>
+ <text x="220" y="115" text-anchor="middle" font-size="12">verbal · logical</text><text x="220" y="133" text-anchor="middle" font-size="12">sequential · analytic</text>
+ <text x="420" y="90" text-anchor="middle" font-weight="700" fill="var(--per)">RIGHT (R)</text>
+ <text x="420" y="115" text-anchor="middle" font-size="12">visual · holistic</text><text x="420" y="133" text-anchor="middle" font-size="12">spatial · intuitive</text>
+ <text x="320" y="246" text-anchor="middle" class="mono mut" font-size="11">corpus callosum links them · both ticked = W (whole / integrated)</text></svg>`,
+personality:()=>`<svg class="art" viewBox="0 0 640 240" role="img" aria-label="Theatrical mask, the origin of the word persona">
+ <g class="bob"><path d="M250 50 Q 320 20 390 50 Q 410 140 320 200 Q 230 140 250 50Z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+ <ellipse cx="290" cy="95" rx="18" ry="11" fill="var(--accent)"/><ellipse cx="350" cy="95" rx="18" ry="11" fill="var(--accent)"/>
+ <path d="M290 145 Q 320 165 350 145" stroke="var(--accent)" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+ <text x="90" y="110" text-anchor="middle" font-size="30" font-weight="700" class="mono">persona</text><text x="90" y="134" text-anchor="middle" class="mut" font-size="13">Latin · stage mask</text>
+ <text x="540" y="100" text-anchor="middle" font-size="14" font-weight="700">enduring traits</text><text x="540" y="122" text-anchor="middle" font-size="14" font-weight="700">+ unique characteristics</text><text x="540" y="144" text-anchor="middle" class="mut" font-size="13">= consistency &amp; individuality</text></svg>`,
+pf16:()=>{const f=["A","B","C","E","F","G","H","I","L","M","N","O","Q1","Q2","Q3","Q4"];
+ return `<svg class="art" viewBox="0 0 640 240" role="img" aria-label="Sixteen factor bars rising and falling on a sten scale">
+ <line x1="20" y1="200" x2="620" y2="200" class="ln"/><line x1="20" y1="110" x2="620" y2="110" stroke="var(--line)" stroke-dasharray="4 4"/><text x="624" y="114" class="mono mut" font-size="10" text-anchor="end">5.5 mean</text>
+ ${f.map((c,i)=>{const x=30+i*37,a=[3,7,6,4,2,8,3,4,9,5,8,7,5,6,6,6][i];const h=v=>v*17;return `<rect x="${x}" width="26" rx="4" fill="${a>=7?'var(--per)':a<=4?'var(--cog)':'var(--muted)'}" y="${200-h(a)}" height="${h(a)}"><animate attributeName="height" values="${h(a)};${h(10-a+1)};${h(a)}" dur="${4+i%3}s" repeatCount="indefinite"/><animate attributeName="y" values="${200-h(a)};${200-h(10-a+1)};${200-h(a)}" dur="${4+i%3}s" repeatCount="indefinite"/></rect><text x="${x+13}" y="222" text-anchor="middle" class="mono" font-size="11">${c}</text>`}).join("")}
+ </svg>`},
+epq:()=>`<svg class="art" viewBox="0 0 640 260" role="img" aria-label="Eysenck's extraversion and neuroticism axes with a moving point">
+ <line x1="120" y1="130" x2="520" y2="130" class="ln"/><line x1="320" y1="20" x2="320" y2="240" class="ln"/>
+ <text x="110" y="134" text-anchor="end" font-size="13" font-weight="700">Introvert</text><text x="530" y="134" font-size="13" font-weight="700">Extravert</text>
+ <text x="320" y="14" text-anchor="middle" font-size="13" font-weight="700">Neurotic (unstable)</text><text x="320" y="256" text-anchor="middle" font-size="13" font-weight="700">Stable</text>
+ <text x="220" y="70" text-anchor="middle" class="mut" font-size="12">anxious · moody</text><text x="420" y="70" text-anchor="middle" class="mut" font-size="12">touchy · impulsive</text>
+ <text x="220" y="200" text-anchor="middle" class="mut" font-size="12">calm · reliable</text><text x="420" y="200" text-anchor="middle" class="mut" font-size="12">sociable · lively</text>
+ <circle r="11" fill="var(--per)"><animateMotion dur="9s" repeatCount="indefinite" path="M240 180 C 300 60, 460 80, 420 170 S 200 230, 240 180"/></circle>
+ <text x="600" y="40" text-anchor="end" class="mono" font-size="11" fill="var(--accent)">+ P axis · + Lie scale</text></svg>`,
+neo:()=>{const lab=["O","C","E","A","N"],pt=v=>v.map((r,i)=>{const t=i/5*Math.PI*2-Math.PI/2;return (320+Math.cos(t)*r*1.9).toFixed(0)+","+(125+Math.sin(t)*r*1.9).toFixed(0)}).join(" ");
+ const a=[59,47,66,38,47],b=[45,62,40,58,55],c=[52,50,52,50,52];
+ return `<svg class="art" viewBox="0 0 640 250" role="img" aria-label="Big Five radar shape morphing between profiles">
+ ${[20,40,60].map(r=>`<polygon points="${pt([r,r,r,r,r])}" fill="none" stroke="var(--line)" stroke-width="1.5"/>`).join("")}
+ <polygon fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3" points="${pt(a)}"><animate attributeName="points" values="${pt(a)};${pt(b)};${pt(c)};${pt(a)}" dur="9s" repeatCount="indefinite"/></polygon>
+ ${lab.map((l,i)=>{const t=i/5*Math.PI*2-Math.PI/2;return `<text x="${320+Math.cos(t)*138}" y="${130+Math.sin(t)*112}" text-anchor="middle" font-weight="700" font-size="16">${l}</text>`}).join("")}
+ <text x="20" y="240" class="mono mut" font-size="11">O·C·E·A·N — 12 items each · T-scores</text></svg>`},
+bell:()=>{const a=["Home","Health","Social","Emotional","Occupational"];
+ return `<svg class="art" viewBox="0 0 640 240" role="img" aria-label="Five adjustment areas as gauges">
+ ${a.map((t,i)=>{const x=70+i*125;return `<g><path d="M${x-42} 140 A42 42 0 0 1 ${x+42} 140" fill="none" stroke="var(--line)" stroke-width="10" stroke-linecap="round"/><path d="M${x-42} 140 A42 42 0 0 1 ${x+42} 140" fill="none" stroke="${i%2?'var(--per)':'var(--accent)'}" stroke-width="10" stroke-linecap="round" class="draw" style="stroke-dasharray:132;animation-delay:${i*.3}s"/><text x="${x}" y="172" text-anchor="middle" font-weight="700" font-size="13">${t}</text></g>`}).join("")}
+ <text x="320" y="40" text-anchor="middle" font-size="15" font-weight="700">Higher score = poorer adjustment</text><text x="320" y="214" text-anchor="middle" class="mono mut" font-size="11">Social is the odd one: low = aggressive, high = retiring</text></svg>`}
+};
+
+ART.scores=()=>{const pts=[];for(let x=-3;x<=3.001;x+=.1)pts.push(`${(320+x*90).toFixed(1)},${(200-150*Math.exp(-x*x/2)).toFixed(1)}`);
+ return `<svg class="art" viewBox="0 0 640 264" role="img" aria-label="Normal curve with z, T and sten scales and a moving marker">
+ <polygon points="50,200 ${pts.join(" ")} 590,200" class="soft"/><polyline points="${pts.join(" ")}" fill="none" stroke="var(--accent)" stroke-width="3"/>
+ <line x1="40" y1="200" x2="600" y2="200" class="ln"/>
+ ${[-2,-1,0,1,2].map(z=>`<line x1="${320+z*90}" y1="200" x2="${320+z*90}" y2="206" class="ln"/><text x="${320+z*90}" y="222" text-anchor="middle" class="mono" font-size="12">z ${z>0?"+"+z:z}</text><text x="${320+z*90}" y="238" text-anchor="middle" class="mono mut" font-size="11">T ${50+10*z}</text><text x="${320+z*90}" y="254" text-anchor="middle" class="mono mut" font-size="11">sten ${5.5+2*z}</text>`).join("")}
+ <g><line y1="40" y2="200" x1="0" x2="0" stroke="var(--per)" stroke-width="2.5" stroke-dasharray="5 4"/><circle cy="40" r="7" fill="var(--per)"/><animateTransform attributeName="transform" type="translate" values="230 0;500 0;380 0;230 0" dur="8s" repeatCount="indefinite"/></g>
+ <text x="40" y="30" class="mono mut" font-size="11">raw → z → T / sten / percentile</text></svg>`};
+
+/* ---------- Viva intros ---------- */
+const INTROS=[
+{id:"cognition",kind:"intro",grp:"Viva intros",n:"C",name:"Introduction to Cognition",art:"cognition",cap:"Tap a model to see what the filter lets through.",
+ body:`<p><mark>Cognitive psychology is the scientific study of mental processes</mark> such as perception, attention, memory, language, problem-solving and thinking. By viewing the human mind as an <b>active information-processing system</b>, analogous to computational architecture, the discipline seeks to uncover how people acquire, store, transform and communicate knowledge. Rather than treating observable behaviour in isolation, cognitive psychologists investigate internal mental events, using empirical methods like <b>reaction-time tracking, neuroimaging and psychophysiological measures</b> to map out the hidden mechanics of human thought.</p>
+ <p>The practical benefits extend far beyond the laboratory, into clinical, educational and technological domains. In clinical settings, cognitive frameworks inform evidence-based interventions like <b>Cognitive Behavioural Therapy (CBT)</b>, which helps people restructure maladaptive thought patterns to reduce emotional distress. In education, understanding memory consolidation, <b>cognitive load theory</b> and attention spans allows educators to design curricula that maximise long-term retention.</p>
+ <h3>Perception</h3>
+ <p>Perception is the cognitive process by which the brain <mark>organises, integrates and interprets raw sensory input</mark> to construct a meaningful internal representation of the world. Unlike <b>sensation</b>, which is the mere physical detection of stimuli by sensory receptors, perception involves <b>top-down</b> cognitive context and <b>bottom-up</b> sensory data converging to make sense of reality.</p>
+ <h4>Major theories of perception</h4>
+ <dl class="terms"><dt>Gestalt principles</dt><dd>Max Wertheimer, Kurt Koffka and Wolfgang Köhler. The mind naturally organises sensory elements into unified wholes (gestalts). Core principles: <b>proximity</b> (grouping close elements), <b>similarity</b> (grouping similar items), <b>closure</b> (seeing incomplete figures as complete) and <b>continuity</b> (following smooth paths).</dd>
+ <dt>Gibson's ecological theory (direct perception)</dt><dd>James J. Gibson. A bottom-up approach: optical arrays in the environment contain rich, unambiguous information, enough for perception without complex internal processing. Central concept: <mark>affordances</mark>, the actionable properties between the world and an actor (a chair affords sitting).</dd>
+ <dt>Gregory's constructivist theory (indirect perception)</dt><dd>Richard Gregory. A top-down view: perception is an active <b>hypothesis-testing</b> process. Because input is often ambiguous, the brain builds perceptual hypotheses from past experience, knowledge and sensory clues.</dd></dl>
+ <h4>Types of perception</h4>
+ <ul class="pts"><li><b>Visual:</b> interpreting light reflected off surfaces, giving shape, colour, depth and motion.</li><li><b>Auditory:</b> processing frequency and amplitude to identify pitch, timbre, location and speech.</li><li><b>Haptic:</b> actively exploring objects by touch, combining tactile feedback and kinaesthetic awareness.</li><li><b>Olfactory and gustatory:</b> chemical processing of odorants and tastants, combined into flavour.</li></ul>
+ <h3>Attention</h3>
+ <p>Attention is the cognitive mechanism of <mark>selective concentration</mark>: focusing on specific stimuli while filtering out irrelevant or competing distractions. Because human cognitive capacity is limited, attention acts as a vital processing <b>bottleneck</b>.</p>
+ <h4>Types of attention</h4>
+ <dl class="terms"><dt>Selective</dt><dd>Focusing on one stream while ignoring distractors, e.g. listening to a friend at a loud party (the <b>Cocktail Party Effect</b>).</dd><dt>Divided</dt><dd>Splitting resources across tasks, e.g. driving while listening to directions.</dd><dt>Sustained (vigilance)</dt><dd>Maintaining focus over a long period, e.g. monitoring radar or security feeds.</dd><dt>Alternating</dt><dd>Shifting focus back and forth between tasks with different demands.</dd></dl>
+ <h4>Major theories of attention</h4>
+ <dl class="terms"><dt>Broadbent's filter model</dt><dd><b>Early selection.</b> Information passes through a sensory buffer, then a selective filter blocks unattended information based on physical features (pitch, loudness) before meaning is analysed.</dd>
+ <dt>Treisman's attenuation model</dt><dd>The filter doesn't block unattended messages, it <b>attenuates</b> (turns down) them. Highly salient words like your own name still break through because their thresholds are permanently low.</dd>
+ <dt>Deutsch-Norman model</dt><dd><b>Late selection.</b> All stimuli are analysed for meaning before selection; the bottleneck is just before conscious response.</dd>
+ <dt>Kahneman's capacity model</dt><dd>Attention is not a rigid filter but a <b>limited pool of general-purpose resources</b>, allocated flexibly by task demand, arousal and momentary intentions.</dd></dl>
+ <h3>Thinking and problem solving</h3>
+ <p>Thinking involves the manipulation of mental representations, concepts, symbols and rules. It lets us go beyond immediate sensory data to form generalisations, make inferences and conceptualise abstract ideas.</p>
+ <dl class="terms"><dt>Algorithms</dt><dd>Step-by-step logical procedures that <b>guarantee</b> a correct solution if followed (long division).</dd><dt>Heuristics</dt><dd>Mental shortcuts or rules of thumb that speed up decisions but don't guarantee a correct outcome (working backward, means-ends analysis).</dd><dt>Insight</dt><dd>A sudden realisation of the solution without trial and error, studied by Wolfgang Köhler with chimpanzees using tools.</dd></dl>
+ <p><b>Barriers:</b> <mark>functional fixedness</mark> (using an object only in its usual way), <mark>mental set</mark> (sticking to a strategy that worked before) and <mark>confirmation bias</mark> (favouring information that supports what you already believe).</p>
+ <h3>Learning</h3>
+ <p>In cognitive psychology, learning is a <b>relatively permanent change in mental structures, internal representations or behaviour resulting from experience</b>. Unlike strict behaviourist views based on stimulus-response bonds, cognitive theories emphasise active knowledge acquisition, schema development and cognitive maps (Edward Tolman's latent learning). Core paradigms include cognitive constructivism (Piaget), social cognitive learning (Bandura's observational learning) and information-processing models of how input moves through working memory into long-term schemas.</p>
+ <h3>Current trends: HCI and UX design</h3>
+ <ul class="pts"><li><b>Icons and visual metaphors:</b> use Gestalt grouping and familiar metaphors (a trash can for delete) to lower <b>cognitive load</b>, the mental effort used in working memory.</li><li><b>Affordances in interfaces:</b> from Gibson. Shadows, gradients and hover changes signal that a button is clickable.</li><li><b>Hick's law:</b> decision time increases logarithmically with the number and complexity of choices, so designers use progressive disclosure.</li><li><b>Attention-driven design:</b> visual hierarchy, contrast, whitespace and motion guide focus to the call-to-action.</li></ul>`,
+ tip:"Filter models by where selection happens: <b>Broadbent (early) → Treisman (attenuated) → Deutsch-Norman (late)</b>. Kahneman is the odd one: no filter, just a resource pool."},
+{id:"memory",kind:"intro",grp:"Viva intros",n:"M",name:"Introduction to Memory",art:"memory",cap:"Grey dot = attended but not rehearsed, so it's lost from STM.",
+ body:`<p>Memory is one of the fundamental cognitive processes through which information is <mark>encoded, retained, organised and later retrieved</mark>. It lets us learn from experience, acquire knowledge, recognise people and objects, develop skills, solve problems, communicate and keep a sense of personal identity. Without memory, experiences would remain isolated events with little influence on later behaviour.</p>
+ <p>Memory is not a passive storage box. It is a continuous interaction between attention, perception, encoding, storage, retrieval and existing knowledge. Information may be transformed, organised, linked to prior knowledge, kept for varying periods and <b>reconstructed</b> during recall. It has traditionally been studied through the <b>information-processing approach</b> (mind as computer), which dominated cognitive psychology in the 1950s–1970s.</p>
+ <h3>Definitions and key contributors</h3>
+ <dl class="terms"><dt>Hermann Ebbinghaus</dt><dd>One of the first to study memory experimentally, using <b>nonsense syllables</b>. Showed retention changes systematically over time and practice improves learning. Made memory a laboratory topic, not just a philosophical one.</dd>
+ <dt>William James</dt><dd><b>Primary memory</b> (immediately in consciousness) vs <b>secondary memory</b> (not conscious now but can be brought back). Anticipated the STM / LTM split.</dd>
+ <dt>Frederic Bartlett</dt><dd>Memory is <mark>constructive</mark>: not a literal copy but a reconstruction using knowledge, expectations and <b>schemas</b>.</dd>
+ <dt>Atkinson & Shiffrin (1968)</dt><dd>The three-store or <b>modal model</b>: sensory memory → short-term memory → long-term memory, with <b>control processes</b> such as rehearsal.</dd>
+ <dt>Baddeley & Hitch</dt><dd>Replaced passive STM with <b>working memory</b>, a limited system that holds and manipulates information during tasks.</dd>
+ <dt>Endel Tulving</dt><dd>LTM is not one system: <b>episodic</b> (personally experienced events) vs <b>semantic</b> (general knowledge, facts, meanings).</dd></dl>
+ <h3>Characteristics of memory</h3>
+ <ul class="pts"><li><b>Encoding:</b> turning input into a form that can be stored (visually, verbally or semantically).</li><li><b>Storage:</b> keeping it over time: fractions of a second (sensory), seconds (STM) or decades (LTM).</li><li><b>Retrieval:</b> accessing it through recall, recognition, relearning or implicit effects.</li><li><b>Organisation:</b> associations, categories, schemas and networks.</li><li><b>Reconstruction:</b> knowledge and expectations shape what is remembered.</li></ul>
+ <h3>Memory systems</h3>
+ <div class="tbl"><table><thead><tr><th>System</th><th>Duration</th><th>Capacity</th><th>Key points</th></tr></thead><tbody>
+ <tr><td>Sensory</td><td>~2 s or less</td><td>Very large</td><td><b>Iconic</b> (visual; sparkler trail; Sperling's partial-report experiments) and <b>echoic</b> (auditory; catching the last words someone said)</td></tr>
+ <tr><td>Short-term</td><td>20–30 s without rehearsal</td><td>7 ± 2 chunks (Miller, 1956)</td><td>Limited, vulnerable to interference, kept alive by rehearsal. Brown–Peterson paradigm shows rapid loss</td></tr>
+ <tr><td>Working</td><td>Seconds</td><td>Limited</td><td>Storage + processing for reasoning, reading, mental arithmetic, planning</td></tr>
+ <tr><td>Long-term</td><td>Minutes to years</td><td>Extremely large</td><td>Multiple systems</td></tr></tbody></table></div>
+ <h4>Types of long-term memory</h4>
+ <ul class="pts"><li><b>Explicit / declarative</b> (can be consciously reported): <mark>episodic</mark> (your first day at college, yesterday's breakfast) and <mark>semantic</mark> (Delhi is the capital of India, 2 + 2 = 4).</li><li><b>Implicit / nondeclarative</b> (shown without conscious recollection): procedural memory (cycling, typing, tying shoelaces), priming, classical conditioning, habituation, sensitisation. Procedural memory can stay intact even when declarative memory is impaired.</li></ul>
+ <h3>Models of memory</h3>
+ <h4>Atkinson–Shiffrin modal model</h4><p class="formula">Sensory register → Short-term store → Long-term store</p>
+ <p><b>Control processes</b> (rehearsal, attention, coding, retrieval strategies, organisation) decide what happens to information, so it doesn't move automatically. Later research showed STM is more complex than one store, working memory manipulates information, LTM has multiple systems and the flow isn't simply linear.</p>
+ <h4>Levels of processing (Craik & Lockhart, 1972)</h4>
+ <p>How <b>deeply</b> information is processed matters more than which store holds it. <b>Structural</b> (“Is the word in capitals?”) → <b>phonemic</b> (“Does it rhyme with CAT?”) → <b>semantic</b> (“Can it be eaten?”). Deeper processing gives more durable traces.</p>
+ <h4>Working memory model (Baddeley & Hitch, 1974)</h4>
+ <dl class="terms"><dt>Central executive</dt><dd>Supervisor: directs attention, allocates resources, coordinates components, switches tasks, plans, monitors, integrates.</dd><dt>Phonological loop</dt><dd>Phonological store + subvocal rehearsal (repeating a phone number silently).</dd><dt>Visuospatial sketchpad</dt><dd>Visual, spatial information and mental images (picturing the route to the library).</dd><dt>Episodic buffer</dt><dd>Added later by Baddeley (2000). Integrates the loop, sketchpad and LTM into one coherent representation.</dd></dl>
+ <h4>Tulving's multiple memory systems</h4><p>Episodic memory is organised around personal events and time; semantic memory around meaning and concepts. This led to the modern view of memory as multiple interacting systems.</p>
+ <h3>Serial position effect</h3>
+ <p>Free recall of a list depends on position, giving a <b>U-shaped curve</b>. <mark>Primacy effect</mark>: early items get more rehearsal and transfer to LTM. <mark>Recency effect</mark>: the last items are still in STM at immediate recall. Middle items are recalled worst.</p>
+ <h3>Processes of memory</h3>
+ <p class="formula">Attention → Encoding → Consolidation → Storage → Retrieval → Reconstruction</p>
+ <ul class="pts"><li><b>Attention</b> is the gateway; unattended input fades from sensory memory.</li><li><b>Encoding:</b> visual, phonological, semantic or motor coding.</li><li><b>Rehearsal:</b> <i>maintenance</i> (plain repetition of a phone number) vs <i>elaborative</i> (linking to meaning, like relating “episodic memory” to your own life).</li><li><b>Consolidation:</b> new information becomes stable in LTM; Sternberg calls it integrating new with stored information.</li><li><b>Retrieval:</b> <i>recall</i> (produce it) vs <i>recognition</i> (identify it; more cues, so easier).</li><li><b>Forgetting:</b> <i>decay</i> (trace fades) and <i>interference</i> (other information blocks it). Often the information is still there, just without a cue.</li><li><b>Reconstruction:</b> schemas, expectations and context can distort memories, which matters for eyewitness testimony.</li></ul>`,
+ tip:"Years to remember: <b>Atkinson & Shiffrin 1968</b>, <b>Craik & Lockhart 1972</b>, <b>Baddeley & Hitch 1974</b> (+ episodic buffer 2000), <b>Miller 1956</b>."},
+{id:"personality",kind:"intro",grp:"Viva intros",n:"P",name:"Introduction to Personality",art:"personality",cap:"From the Latin persona, an actor's mask.",
+ body:`<p>The term “personality” comes from the Latin <mark>“persona”</mark>, the theatrical mask worn by actors in Greek dramas. Psychologists agree that personality goes beyond the roles people play, though there is no single accepted definition. Theorists, shaped by their own backgrounds and experiences, have developed unique theories and perspectives.</p>
+ <p><b>APA definition:</b> Personality is “the enduring configuration of characteristics and behavior that comprises an individual's unique adjustment to life, including major traits, interests, drives, values, self-concept, abilities, and emotional patterns.” It is a complex, dynamic integration shaped by heredity and constitution, physical maturation, early training, identification with significant individuals and groups, culturally conditioned values and roles, and critical experiences and relationships.</p>
+ <p><b>Allport (1937):</b> “Personality is the <mark>dynamic organization</mark> within the individual of those <mark>psychophysical systems</mark> that determine his unique adjustments to the environment.”</p>
+ <p>Personality is a pattern of <b>relatively permanent traits and unique characteristics</b> that give consistency and individuality to behaviour. Traits explain individual differences, consistency over time and stability across situations. Characteristics include temperament, physique and intelligence. So personality is the distinct pattern of traits and characteristics that define how we consistently think, feel and behave.</p>
+ <h3>Different approaches to personality</h3>
+ <h4>Carl Rogers: person-centred</h4><p>Focuses on subjective experience, self-concept and an innate tendency to grow. Every person has an <b>actualizing tendency</b> (Rogers, 1951). Key ideas: the perceived self vs the ideal self, <b>unconditional positive regard</b> (valuing someone without conditions) and <b>conditions of worth</b>, which cause <b>incongruence</b> between self-concept and experience. The <b>fully functioning person</b> is open to experience, trusts their feelings and lives freely. Therapy rests on empathy, genuineness and unconditional positive regard.</p>
+ <h4>Abraham Maslow: humanistic</h4><p>Maslow (1908–1970) emphasised human potential and growth. His <b>hierarchy of needs</b>: physiological → safety → belongingness and love → esteem → self-actualization. Lower needs usually need some satisfaction before higher ones dominate. Self-actualizers show self-acceptance, creativity, independence and realistic perception.</p>
+ <h4>Carl Jung: analytical psychology</h4><p>Libido is general life energy, not just sexual. The psyche has the <b>conscious</b> (ego), <b>personal unconscious</b> (forgotten or repressed experiences) and <b>collective unconscious</b> (inherited universal patterns, the <b>archetypes</b>). Attitudes: introversion and extraversion. Functions: thinking, feeling, sensation, intuition. Archetypes: <b>persona</b> (social face), <b>shadow</b> (hidden side), <b>anima/animus</b>, and the <b>Self</b> (wholeness). A <b>complex</b> is a cluster of emotionally linked thoughts and memories. <b>Individuation</b> integrates conscious and unconscious.</p>
+ <h4>Alfred Adler: individual psychology</h4><p>Inferiority feelings are normal and motivating; if not overcome they form an <b>inferiority complex</b> (from physical weakness, pampering, neglect). Overcompensation can create a <b>superiority complex</b>. Key ideas: <b>striving for superiority</b>, <b>fictional finalism</b> (imagined future goals guide behaviour), <b>style of life</b>, <b>creative self</b>, four lifestyles (dominant, getting, avoiding, socially useful), <b>social interest</b> and <b>birth order</b>. Methods: birth-order analysis, early recollections, dream analysis. Criticism: hard to test; birth-order findings are inconsistent.</p>
+ <h4>Gordon Allport: trait theory</h4><p>Adults aren't prisoners of childhood; he stressed uniqueness, conscious motives and the present. <b>Individual traits</b> (unique) vs <b>common traits</b> (shared in a culture). Personal dispositions: <b>cardinal</b> (pervasive, shapes a whole life), <b>central</b> (core characteristics) and <b>secondary</b> (less consistent preferences). <b>Functional autonomy</b>: adult motives become independent of the childhood drives they grew from.</p>
+ <h4>Raymond Cattell: factor-analytic trait theory</h4><p>Personality is “that which permits a prediction of what a person will do in a given situation.” Used <b>factor analysis</b>. <b>Surface traits</b> (visible clusters) vs <b>source traits</b> (stable underlying factors), which are <b>constitutional</b> (biological) or <b>environmental-mold</b>. Functional groups: ability, temperament and dynamic traits (innate <b>ergs</b>, learned <b>sentiments</b>). Data: <b>L-data</b> (life records), <b>Q-data</b> (questionnaires), <b>T-data</b> (objective tests). Found <b>16 source traits</b> → the 16PF.</p>
+ <h4>Hans Eysenck: biological dimensions</h4><p>Personality is stable and largely biological and genetic, organised hierarchically from specific acts to broad superfactors. First two independent dimensions: <b>extraversion–introversion</b> and <b>neuroticism–stability</b>; later <b>psychoticism–control</b> (cruelty, hostility, insensitivity), giving the three-factor model. Rooted in heredity, CNS arousal and hormones.</p>
+ <h4>Erik Erikson: psychosocial theory</h4><p>Development across the whole lifespan through 8 stages, each a crisis: Trust vs Mistrust (infancy), Autonomy vs Shame & Doubt (early childhood), Initiative vs Guilt (preschool), Industry vs Inferiority (school age), Identity vs Role Confusion (adolescence), Intimacy vs Isolation (young adulthood), Generativity vs Stagnation (middle adulthood), Ego Integrity vs Despair (late adulthood).</p>
+ <h3>Factors influencing personality</h3>
+ <dl class="terms"><dt>Genetic</dt><dd>Eysenck's P, E, N; McCrae & Costa's <b>Big Five</b> (N, E, O, A, C); Buss & Plomin's temperaments (emotionality, activity, sociability); Zuckerman's sensation seeking. Twin studies support it. Genes give predispositions, not fixed outcomes.</dd>
+ <dt>Environmental</dt><dd>Adler: birth order and family. Horney: culture and gender. Allport: genetics is the raw material, environment shapes it. Erikson: social and historical forces. Also parenthood, marriage, divorce, jobs, stress, culture, neighbourhood.</dd>
+ <dt>Learning</dt><dd>Skinner: reinforcement and conditioning. Bandura: observational learning, vicarious reinforcement, <b>self-efficacy</b>. Rotter: <b>locus of control</b>. Seligman: <b>learned helplessness</b> and optimism. A sense of control → better coping, self-esteem, less anxiety.</dd>
+ <dt>Parental</dt><dd>Freud first stressed it. Adler: rejection and neglect. Horney: parental warmth → security. Erikson: first-year bond → basic trust. Maslow: physiological and safety needs. Rogers: unconditional positive regard. <b>Authoritative parenting</b> → greater competence and adjustment. Children also influence parents, and parenting is partly heritable.</dd>
+ <dt>Developmental</dt><dd>Freud: fixed by age 5–6. Cattell, Allport, Erikson: can change later. Five-factor traits fairly stable after 30. With age people become more conscientious, agreeable and stable; N, E and O decline slightly.</dd>
+ <dt>Consciousness</dt><dd>Most theorists give conscious processes a role. Kelly: <b>personal constructs</b> to predict events. Bandura: observing others and anticipating consequences.</dd>
+ <dt>Unconscious</dt><dd>Freud: store of repressed wishes. Modern cognitive psychology confirms processing outside awareness (subliminal research), but this “cognitive unconscious” is more rational than Freud's.</dd></dl>`,
+ tip:"Definitions examiners ask most: <b>Allport 1937</b> (dynamic organisation… psychophysical systems) and <b>Cattell</b> (prediction of what a person will do in a given situation)."}
+];
+
+/* ---------- Experiments ---------- */
+const EXPS=[
+{id:"cueing",kind:"exp",grp:"Experiments",n:"1",name:"Cueing on Recall",art:"cueing",cap:"Spreading activation (Collins & Loftus, 1975).",lab:"cueLab",
+ intro:`<p><b>Recall</b> is a form of memory retrieval where a person must <mark>actively reproduce information learned earlier</mark>, without it being presented again. This differs from <b>recognition</b>, where the person only identifies previously seen material from options (like multiple choice). Recall is generally harder and more effortful than recognition because it requires searching memory rather than matching against a cue.</p>
+ <p>There are several sub-types of recall. <b>Free recall</b> involves recalling items in any order without assistance. <b>Serial recall</b> requires recalling items in the exact order presented. <b>Cued recall</b> gives a hint or prompt (cue) to help retrieve the target information.</p>
+ <p><mark>Cueing</mark> is providing a stimulus, such as a word, category label, image, sound, smell or environmental context, that is associated with a target memory, to help a person retrieve it. Memories are not stored as isolated facts but as <b>networks of associations</b>, and a cue can “unlock” a pathway to a memory that would otherwise be hard to reach. Cued recall experiments study how and why prompts improve retrieval, and what this tells us about how information is stored and organised.</p>
+ <h3>Development of the tool</h3>
+ <p><b>Hermann Ebbinghaus (1885)</b> was the first to study memory experimentally. He used lists of nonsense syllables and measured recall and relearning speed. He didn't use cueing directly, but his controlled word-list method became the basis for all later recall research, including cued recall.</p>
+ <p><b>Early associationist psychologists</b> (late 1800s–early 1900s) proposed that ideas are linked, so activating one idea (a cue) can trigger a linked idea (the target). This groundwork later became testable in the laboratory.</p>
+ <p><b>Mary Whiton Calkins</b>, in the early 1900s, developed <b>paired-associate learning</b>: participants learn word pairs (“dog–chair”) and are later given the first word as a cue for the second. This is one of the earliest formal cued recall tasks.</p>
+ <p><b>Tulving and Pearlstone (1966)</b> compared free and cued recall using categorised word lists (furniture, animals). Giving category names at test significantly increased recall, showing that <mark>cueing helps retrieval, not just storage</mark>.</p>
+ <p><b>Tulving and Thomson (1973)</b> proposed the <b>Encoding Specificity Principle</b>: a cue works only if it matches the way information was encoded. This remains the dominant explanation of why some cues work and others don't.</p>
+ <p><b>Godden and Baddeley (1975)</b> extended cueing to environmental context. Deep-sea divers recalled word lists better when tested in the same environment (underwater or on land) where they learned them, showing cues need not be verbal. Cued recall is now used across cognitive, clinical (memory disorders), developmental (ageing) and educational psychology.</p>
+ <h3>Theories behind the tool</h3>
+ <dl class="terms"><dt>Encoding specificity</dt><dd>Tulving & Thomson (1973). Retrieval is better when cues at recall match those at encoding. A cue isn't good or bad in itself; it depends on the match.</dd>
+ <dt>Spreading activation</dt><dd>Collins & Loftus (1975). Memory is a network of concepts; activating one spreads to related ones, making them easier to retrieve.</dd>
+ <dt>Generate–recognise</dt><dd>Two stages: the cue generates possible items, then the person recognises the correct one.</dd>
+ <dt>Context-dependent memory</dt><dd>Recall improves when the internal state or external context matches learning. Reinstating context acts as a cue.</dd>
+ <dt>Levels of processing</dt><dd>Craik & Lockhart (1972). Deeper, meaningful processing forms stronger traces; shallow processing (sound only) forms weaker ones.</dd></dl>
+ <h3>Applications</h3>
+ <p>In <b>education</b>, headings, keywords and mnemonics act as cues during revision and exams. In <b>eyewitness testimony</b>, the cognitive interview uses contextual and retrieval cues. In <b>clinical and rehabilitation</b> settings, cued recall helps assess and support people with memory impairments. In <b>advertising</b>, jingles, slogans, colours and logos cue brand recall. In <b>everyday life</b>, we use categorised grocery lists, acronyms and first-letter mnemonics.</p>`,
+ aim:"To study the effect of cueing on recall.",hyp:"Cueing has a positive effect on recall.",
+ plan:"The experiment is conducted in two series: Series 1 – Free recall and Series 2 – Cued recall. Recall under the two conditions is compared, each given in a separate series.",
+ materials:["Two lists of thirty words each: List A words selected randomly; List B words selected so they fall into five categories with six words in each","Plain response sheet for recall of List A","Response sheet with the five category names printed, for recall of List B","Wooden screen","Stopwatch"],
+ vars:{iv:"The presence of cues in the second series",dv:"The number of words recalled in each list",ctrl:["<b>Knowledge of the experiment:</b> the subject should not know the nature of the experiment","<b>Distraction:</b> conduct in a silent, well-lit room","<b>Exposure time:</b> limited to two seconds per word","<b>Order of presentation:</b> words presented in serial order","<b>Rest period:</b> 5 minutes after List A to avoid fatigue","<b>Number of words:</b> List A random; List B five categories × six words"]},
+ instr:"“I will read out a list of words. Listen carefully, as you will be asked to recall them later.”",
+ proc:["Establish good rapport between experimenter and subject.","<b>Series 1 – Free recall:</b> instruct the subject that a list of words will be presented verbally and to listen carefully to recall them later.","Present List A in an even tone at the rate of two seconds per word.","Give the subject a plain response sheet and ask them to recall the list. Allow three minutes for recall without mentioning the time limit.","Allow a 5-minute rest pause before the next series.","<b>Series 2 – Cued recall:</b> present List B in the same manner as List A.","Give the response sheet with the names of the 5 categories (cues) and ask the subject to write as many words from the list as they can recall. Allow three minutes without mentioning the time limit."],
+ prec:["Uniformity in presentation of both lists","Exposure time limited to two seconds per word","A five-minute rest pause between series to avoid fatigue","Do not reveal the aim or the category structure before List B","Do not mention the 3-minute recall limit to the subject"],
+ scoring:`<p>Count the number of words correctly recalled from each list separately. Calculate the difference:</p><p class="formula">Difference (D) = Score in Series 2 (cued) − Score in Series 1 (free)</p><p>A <b>positive D</b> shows that cues improved recall.</p>`,
+ results:`<p class="hint">Table 1: number of words recalled under the two conditions</p><div class="tbl"><table><thead><tr><th>Subject</th><th>List A (free)</th><th>List B (cued)</th><th>Difference</th></tr></thead><tbody><tr><td>Subject</td><td>8</td><td>14</td><td>06</td></tr></tbody></table></div>
+ <h4>Discussion pointers</h4><ul class="pts"><li>State the aim, then the subject's age, background and cooperation during the experiment.</li><li>Report both scores and the difference; link the higher List B score to the category cues.</li><li>Explain why using <b>encoding specificity</b> (List B was encoded by category, so category labels at test match encoding) and <b>spreading activation</b>.</li></ul>
+ <h4>Conclusion</h4><p>The subject scored 8 in List A and 14 in List B. The difference of 6 indicates that cues had a positive effect on recall; the hypothesis is supported.</p>`,
+ rapport:[
+ ["Context cue","Imagine you walk into the kitchen and completely forget why you came. What would you do to get the thought back?","Reinstating context is a retrieval cue (context-dependent memory)."],
+ ["Smell as a cue","If you smelt your old school's classroom right now, what's the first memory you think would come back?","Non-verbal cues unlock linked memories."],
+ ["Detective","You're a detective and a witness says “I don't remember anything.” What would you ask to jog their memory?","Cognitive interview uses cues to aid recall."],
+ ["Song cue","Suppose a song you haven't heard since 8th standard suddenly plays. What memory would it drag back with it?","Music as an associative cue."],
+ ["Tip of the tongue","Imagine you see an actor in a movie and his name is on the tip of your tongue. What would you try to get it out?","Generate–recognise: you generate candidates, then recognise."],
+ ["Divers","If you studied for an exam in your bedroom, do you think you'd remember more writing the exam in the same room? Why?","Godden & Baddeley's context effect."],
+ ["Lost phone","Imagine you lost your phone at a wedding hall. How would you retrace where you were?","Retrieval by mentally reinstating episodes."],
+ ["Super memory","If you could have one sense boosted to remember things better (sight, sound or smell), which one would you pick?","Different modalities serve as cues."]
+ ],rapportNote:"Avoid anything about sorting words into categories before List A, or you'll tip off the subject and boost their free-recall score."},
+{id:"chunking",kind:"exp",grp:"Experiments",n:"2",name:"Chunking",art:"chunking",cap:"Same letters, fewer units to hold.",lab:"chunkLab",
+ intro:`<p><mark>Chunking</mark> is a memory strategy in which individual pieces of information are grouped into larger, meaningful units called “chunks”, to increase how much can be held in short-term or working memory at one time. Instead of remembering many small, unrelated pieces, the mind organises them into fewer, larger and more meaningful units that are easier to remember and retrieve.</p>
+ <p>For example, the letters <b>B-G-H-I-E-K-M-O-N</b> are nine separate items. Grouped as <b>BGH-IEK-MON</b>, they become three chunks. Chunking works because STM is limited by the <b>number of units</b> it can hold, not necessarily the total amount of information. Combining small units into fewer, meaningful groups lets more information be retained.</p>
+ <p>Chunking is closely related to <b>STM span</b>, the number of items a person can hold and recall immediately. It shows that span can be improved through strategic organisation of information, not through an actual increase in capacity.</p>
+ <h3>Development of the tool</h3>
+ <p><b>George A. Miller (1956)</b> is most closely associated with chunking. In “The Magical Number Seven, Plus or Minus Two: Some Limits on Our Capacity for Processing Information”, he reviewed earlier memory-span and judgment research and suggested STM holds about <mark>7 ± 2 items or chunks</mark>, regardless of how much each chunk contains.</p>
+ <p>Miller didn't run the original experiments himself. He brought together earlier findings such as Wechsler's digit span tests and studies of absolute judgment. But he was the first to formally name the <b>“chunk”</b> as a unit of memory, distinct from a <b>“bit”</b> of information. His key idea: capacity is limited by the number of chunks, not the information inside them, so reorganising information into larger meaningful units lets us remember much more within the same capacity.</p>
+ <p>After Miller, researchers designed experiments on chunking. Digit and letter span tasks were modified to compare random sequences with sequences that could be grouped. <b>Bower, Clark, Lesgold and Winzenz (1969)</b> showed that organising word lists into hierarchical categories greatly improved free recall compared with random lists.</p>
+ <p><b>Chase and Simon (1973)</b> studied chess players. Experts remembered board positions far better than beginners when pieces were in <b>realistic game patterns</b> (meaningful chunks), but the advantage <b>disappeared with random arrangements</b>. This became the most cited real-world example of chunking and expertise. Chunking is now important in memory research, expertise, education, artificial intelligence and cognitive models of memory.</p>
+ <h3>Theories behind the tool</h3>
+ <dl class="terms"><dt>Miller's magic number (1956)</dt><dd>STM holds about 7 ± 2 chunks regardless of chunk size. Memory limits became a fixed number of organised units, not individual items.</dd>
+ <dt>Working memory model</dt><dd>Baddeley & Hitch (1974). Chunking relates to the limited <b>phonological loop</b>; denser chunks let it hold more within the same capacity.</dd>
+ <dt>LTM interaction theory</dt><dd>Chunking depends on knowledge in LTM. “NASA” is one unit only if you know the acronym. Explains why experts chunk better.</dd>
+ <dt>Template theory</dt><dd>Gobet & Simon (1996). Experts build larger, flexible <b>templates</b> in LTM to encode complex information quickly, like a grandmaster seeing familiar patterns.</dd>
+ <dt>Capacity limitation theory</dt><dd>STM is a limited number of <b>slots</b> for meaningful units, not a fixed amount of raw information.</dd></dl>
+ <h3>Applications</h3>
+ <p>In <b>education</b>, students divide dates, formulas and vocabulary into meaningful groups. <b>Phone numbers, ID numbers and passwords</b> are split into small groups. In <b>language learning</b>, learning common phrases rather than single words helps recall and fluency. In <b>human-computer interaction</b>, instructions are organised into steps or categories to reduce mental effort. Chunking is also used in <b>memory rehabilitation</b> and in cognitive training for children and older adults.</p>`,
+ aim:"To study the effect of chunking on recall.",hyp:"Chunking increases the efficiency of recall.",
+ plan:"Conduct the experiment in two series: without chunking and with chunking. Present each stimulus string for two seconds and measure immediate free recall.",
+ materials:["Set A: ten strings of 9 letters each arranged as cvccvccvc (consonant-vowel-consonant…), each written on a separate card","Set B: ten strings of nine letters, each arranged as three cvc chunks with space separating the chunks, each on a separate card","Stop clock"],
+ vars:{iv:"The presence or absence of chunks",dv:"The number of letters correctly recalled",ctrl:["Time of exposure limited to two seconds per card","A five-minute rest pause between the series"]},
+ instr:"“I will expose a few cards containing letters. Observe carefully and reproduce the letters in the same order after each card. In case you forget any letter in between, draw a line in that position and proceed.”",
+ proc:["<b>Series 1 (without chunking):</b> instruct the subject to see the letters exposed on the card at the ready signal and to recall immediately as many letters as possible.","Expose the first card from Set A for two seconds.","Allow the subject to recall and write down as many letters as possible, with a maximum of fifteen seconds.","Present the next card and continue until all ten cards are exposed.","Give a rest period of five minutes before the second series.","<b>Series 2 (with chunking):</b> follow the same procedure using Set B, where letters are chunked into three cvc trigrams."],
+ prec:["Exposure exactly two seconds per card, timed with the stop clock","Maximum fifteen seconds for recall per card","Five-minute rest between series","Letters must be reproduced in the same order","Quiet room, free from noise (the record notes noise distracted the subject in Series 1)"],
+ scoring:`<p>Count the letters correctly recalled <b>in the right order</b> from each card, under chunked and non-chunked conditions.</p><p class="formula">Average span = total letters recalled in a series ÷ 10</p><p class="formula">D = score in chunked series − score in non-chunked series</p><p><b>Error analysis:</b> classify errors as <b>within-chunk</b> (wrong letter inside a trigram) or <b>between-chunk</b> (chunks misplaced).</p>`,
+ results:`<p class="hint">Table 1: letters recalled by the subject</p><div class="tbl"><table><thead><tr><th>No.</th><th>Non-chunked string</th><th>Recalled</th><th>Chunked string</th><th>Recalled</th></tr></thead><tbody>
+ ${[["BUCDEFGIB",9,"RAF-SIJ-PEH",7],["LOMNAJHOR",9,"POC-ZAM-KEJ",9],["BACFEGKOL",4,"SIT-JOX-DEM",8],["RUSPAVZEK",6,"GIT-KAM-TUS",9],["CEVDIRNDL",3,"ZAB-HON-DEH",9],["VUTKIJBUP",3,"JOA-RIU-BAP",8],["KULBUCVAZ",7,"KAS-POJ-RIF",7],["SUKDIRGEP",6,"BIP-NAS-GOM",8],["JIKPOBVUL",5,"LAF-VUT-RIS",6],["GIHKACPUD",3,"SOM-VEP-DUJ",9]].map((r,i)=>`<tr><td>${i+1}</td><td class="mono">${r[0]}</td><td>${r[1]}</td><td class="mono">${r[2]}</td><td>${r[3]}</td></tr>`).join("")}
+ <tr><td colspan="2"><b>Total</b></td><td><b>55</b></td><td></td><td><b>80</b></td></tr><tr><td colspan="2"><b>Average STM span</b></td><td><b>5.5</b></td><td></td><td><b>8.0</b></td></tr></tbody></table></div>
+ <p class="formula">D = 8.0 − 5.5 = 2.5</p>
+ <h4>Discussion pointers</h4><ul class="pts"><li>Mention rapport (the record discussed how the subject remembers phone numbers) and cooperation; note any distraction (noise during Series 1).</li><li>Compare totals and average spans; better recall when letters were organised into chunks.</li><li>Report the error analysis: the record found within-chunk errors and <b>no between-chunk errors</b>, i.e. chunks were kept intact.</li><li>Explain with Miller's 7 ± 2 chunks and the phonological loop.</li></ul>
+ <h4>Conclusion</h4><p>Chunking had a positive effect on the participant's efficiency of recall (average span 8.0 vs 5.5); the hypothesis is supported.</p>`,
+ rapport:[
+ ["OTP challenge","Imagine you get a 12-digit code and your phone dies before you can note it. How would you hold it in your head for two minutes?","STM capacity and grouping."],
+ ["Chess grandmaster","If you became a chess grandmaster for a day, what do you think you'd “see” on the board that a beginner can't?","Chase & Simon: experts see chunks."],
+ ["Dance counts","Picture learning a new 32-count dance routine. Would you learn it count by count, or in sets of eight?","Motor sequences chunked into units."],
+ ["7 slots","If your brain had only 7 storage slots for today, what 7 things would you put in them?","Miller's 7 ± 2."],
+ ["Wi-Fi password","A friend reads out the Wi-Fi password “xk7qp2m9”. Would you rather hear it all at once or in pieces?","Grouping reduces load."],
+ ["Number plates","Think of your family vehicle's number plate. Do you remember it as one long string or as parts?","Real-world chunking of KA-20-AB-1234 style plates."],
+ ["Teaching a kid","If you had to teach a 5-year-old the alphabet, how would you break it up so it sticks?","The ABC song is chunked into phrases."],
+ ["New phone format","Imagine you're designing India's new 10-digit phone format. How would you split the digits so people remember them?","Designing chunks for memory."]
+ ],rapportNote:"Your record used the phone-number question for rapport. Keep it light, and don't demonstrate grouping before Series 1."},
+{id:"miq",grp:"Experiments",kind:"exp",n:"3",name:"Mental Imagery Questionnaire",art:"miq",cap:"Six sub-tests, 15 items each.",lab:"miqLab",
+ intro:`<p><mark>Mental imagery</mark> is the ability to form and experience internal representations of objects, events, sensations or situations <b>in the absence of the actual external stimulus</b>. In simple terms, it is mentally experiencing something not currently present to the senses: imagining your childhood home, hearing a familiar song in your mind, or feeling what it's like to walk along a beach. Imagery is closely related to perception because both represent sensory information, though imagery occurs without direct stimulation. Research suggests imagery shares functional characteristics with perception and is involved in memory, thinking, problem-solving, emotion and behaviour.</p>
+ <p>Imagery is not only visual. People differ in the <b>clarity, vividness and ease</b> with which they generate mental experiences. Some form highly detailed images; others experience imagery less vividly. Imagery can involve different senses, letting us recreate sounds, smells, tastes, bodily sensations and movements. This makes imagery important for understanding <b>individual differences</b> in cognitive functioning.</p>
+ <h3>Development of the tool</h3>
+ <p>Questionnaire measures of imagery go back to <b>Betts' Questionnaire upon Mental Imagery (1909)</b>, which asked people to rate how vividly they could imagine items in several senses. <b>Sheehan (1967)</b> shortened it to 35 items across seven modalities (visual, auditory, cutaneous, kinaesthetic, gustatory, olfactory, organic), rated from “very vivid and clear as in reality” to “no image”. The MIQ used in the lab follows this tradition with <b>15 items in each of six sensory areas</b>, rated on a six-point scale.</p>
+ <h3>Six modalities of mental imagery</h3>
+ <dl class="terms"><dt>Visual</dt><dd>Colours, shapes, objects, people, places, like the appearance of a familiar classroom.</dd><dt>Auditory</dt><dd>Sounds, like hearing a person's voice or a piece of music in your mind.</dd><dt>Tactile (tactual)</dt><dd>Touch, pressure, texture, temperature or physical contact.</dd><dt>Olfactory</dt><dd>Smells, like perfume or freshly prepared food.</dd><dt>Gustatory</dt><dd>Tastes, like lemon or chocolate.</dd><dt>Kinaesthetic / organic</dt><dd>Movement or bodily states, like running, stretching, hunger or fatigue. The MIQ sub-test is called <b>organic (bodily)</b>.</dd></dl>
+ <p>Measures of imagery across several senses show that imagery is a <b>multisensory</b> rather than purely visual phenomenon.</p>
+ <h3>Theories of mental imagery</h3>
+ <dl class="terms"><dt>Paivio's dual coding theory</dt><dd>Two interacting systems: <b>verbal</b> and <b>non-verbal imagery</b>. Information coded in both is easier to remember because there are two routes to it. The word “apple” has a verbal label and an image.</dd>
+ <dt>Kosslyn's depictive theory</dt><dd>Visual images contain <b>spatial information</b> and can be manipulated like perception: you can mentally scan or rotate an imagined object. Imagery shares measurable processes with perception.</dd>
+ <dt>Pylyshyn's propositional approach</dt><dd>The picture-like feel of imagery doesn't mean the mind stores literal pictures; information may be stored in an abstract, <b>propositional</b> form. Kosslyn vs Pylyshyn = the <mark>imagery debate</mark>.</dd></dl>
+ <h3>Applications</h3>
+ <p>In <b>memory and learning</b>, imagery helps encode and retrieve information, especially when words are paired with meaningful images. In <b>sports psychology</b>, athletes mentally rehearse movements before performing them. In <b>clinical psychology</b>, mental images are involved in emotions and disorders, and imagery-based techniques are used in interventions. Imagery also supports <b>problem-solving, creativity, planning and decision-making</b>, since people can mentally manipulate objects and outcomes before acting. Assessing imagery tells us how individuals differ in experiencing and using internal representations.</p>`,
+ aim:"To assess the sensory experience of an individual in six areas: visual, auditory, gustatory, olfactory, tactual and bodily.",hyp:"Mental imagery has a positive effect on recall.",
+ plan:"To administer the questionnaire according to the instructions in the manual and score each item on the six-point Likert scale across six sub-tests. Interpretation is done as per the norms given in the manual.",
+ materials:["Mental Imagery Questionnaire","Writing materials","Manual and norms for interpretation"],
+ vars:null,
+ instr:"“Please read the following statements carefully. Have a mental picture of it and judge how vividly and clearly you can see the image, and write down the degree of the image as your response using the scale provided. Carry out this procedure till you complete the questionnaire and avoid omitting any items. There is no time limit. You can take as much time as you want.”",
+ proc:["The MIQ has 15 items in each sensory area, each referring to an experience everyone has had. It can be given individually or to a group.","Seat the participant comfortably in a well-lit room with no visual or auditory distractions.","Provide the MIQ booklet and give the instructions clearly and precisely.","The subject records the clarity of each image in the boxes beside each item, honestly, without omitting items."],
+ prec:["Well-illuminated room free from visual and auditory distraction","Instructions given clearly and precisely","No time limit; don't rush the subject","No items to be omitted","Encourage honest ratings for an accurate interpretation"],
+ scoring:`<div class="tbl"><table><thead><tr><th>Response</th><th>Score</th></tr></thead><tbody><tr><td>Very clear and vivid image</td><td>5</td></tr><tr><td>Fairly vivid image</td><td>4</td></tr><tr><td>Just clear</td><td>3</td></tr><tr><td>Somewhat clear</td><td>2</td></tr><tr><td>Dim image</td><td>1</td></tr><tr><td>No image</td><td>0</td></tr></tbody></table></div>
+ <p>Total each sub-test (15 items, maximum 75), then add all six for the overall score. Convert to <b>z-scores</b> and grade using the manual norms.</p><p>No one rates all 15 items 5, and no one rates them all 0, so a sub-test score <b>never reaches 75 or drops to 0</b> in practice.</p>`,
+ results:`<p class="hint">Table 1: scores on the Mental Imagery Questionnaire</p><div class="tbl"><table><thead><tr><th>No.</th><th>Sub-test</th><th>Raw</th><th>z</th><th>Grade</th><th>Interpretation</th></tr></thead><tbody>
+ <tr><td>1</td><td>Visual</td><td>55</td><td>+0.79</td><td>C</td><td>Above average clear and vivid</td></tr><tr><td>2</td><td>Auditory</td><td>60</td><td>+1.26</td><td>B</td><td>Highly clear and vivid</td></tr><tr><td>3</td><td>Gustatory</td><td>63</td><td>+1.54</td><td>B</td><td>Highly clear and vivid</td></tr><tr><td>4</td><td>Olfactory</td><td>56</td><td>+0.88</td><td>C</td><td>Above average clear and vivid</td></tr><tr><td>5</td><td>Tactual</td><td>59</td><td>+1.16</td><td>C</td><td>Above average clear and vivid</td></tr><tr><td>6</td><td>Organic</td><td>60</td><td>+1.26</td><td>B</td><td>Highly clear and vivid</td></tr><tr><td></td><td><b>Total</b></td><td><b>353</b></td><td><b>+2.21</b></td><td><b>A</b></td><td>Extremely clear and vivid</td></tr></tbody></table></div>
+ <h4>Discussion pointers</h4><ul class="pts"><li>For each sub-test, state raw score, z-score and grade, then what it means (e.g. strong auditory imagery = can vividly imagine voices and music).</li><li>Point out the strongest and weakest modalities.</li><li>Link to applications: memory, creativity, recall of sensory experiences.</li></ul>
+ <h4>Conclusion</h4><p>The subject scored grade A overall, indicating extremely clear and vivid mental imagery across all six sensory modalities.</p>`,
+ rapport:[
+ ["Visual","Imagine standing on a beach at sunset. What colours fill the sky first in your mind?","Visual sub-test."],
+ ["Auditory","Close your eyes for a second: can you “hear” your phone's alarm tone? Is it as loud as the real thing?","Auditory sub-test."],
+ ["Gustatory","Imagine biting into a raw mango with salt and chilli. Does your mouth react just thinking about it?","Gustatory sub-test."],
+ ["Olfactory","Imagine walking past a bakery at 7 a.m. Which smell hits you first?","Olfactory sub-test."],
+ ["Tactual","Picture holding an ice cube in one hand and a hot cup of chai in the other. Which feels more real in your mind?","Tactual sub-test."],
+ ["Organic","Imagine you've just run up five flights of stairs. Can you feel your heartbeat and breathing in your head?","Organic (bodily) sub-test."],
+ ["One-sense festival","If you could relive your favourite festival through only one sense, which sense would you choose?","Modality preference."],
+ ["Radio vs silent film","Would a radio drama with no picture or a silent movie with no sound create a more vivid scene in your head?","Visual vs auditory imagery, dual coding."]
+ ],rapportNote:"These work as a warm-up because they're exactly the kind of experience the MIQ items ask about. Don't ask them to rate anything yet."},
+{id:"solat",grp:"Experiments",kind:"exp",n:"4",name:"Styles of Learning and Thinking (SOLAT)",art:"solat",cap:"Hemisphericity = preference, not proof of brain dominance.",lab:"solatLab",
+ intro:`<h3>Hemisphericity</h3>
+ <p><mark>Hemisphericity</mark> refers to an individual's preference for processing information through one cerebral hemisphere, or through both in an integrated manner. The brain is divided into two cerebral hemispheres connected mainly by the <b>corpus callosum</b>. Although the hemispheres work together, research on <b>cerebral lateralisation</b> shows certain functions are more strongly represented in one hemisphere. Language is predominantly lateralised to the <b>left</b> hemisphere in most people, whereas visuospatial processing is more associated with the <b>right</b>. These functions aren't completely restricted to one side, and both hemispheres continuously interact during normal cognition.</p>
+ <h3>Theory of cerebral lateralisation</h3>
+ <p>Hemispheric specialisation was strongly influenced by research on <b>split-brain patients</b>. <b>Roger Sperry, Michael Gazzaniga, Joseph Bogen</b> and colleagues showed the hemispheres could perform certain functions differently when communication between them was disrupted. These findings clarified functional specialisation and the role of the corpus callosum in integrating information between hemispheres.</p>
+ <h3>Development of SOLAT</h3>
+ <p>Based on these findings, researchers proposed that individuals differ in their preferred ways of processing information. <b>Torrance et al. (1977)</b> developed <b>Your Style of Learning and Thinking (SOLAT)</b>, a self-report measure of preferences associated with left-hemisphere, right-hemisphere or integrated modes. The tool assumes the <mark>left hemisphere</mark> is more involved in <b>verbal, analytical, sequential and logical</b> processing, and the <mark>right hemisphere</mark> in <b>holistic, spatial, visual and non-verbal</b> processing.</p>
+ <p>The <b>Indian version</b> was developed and standardised by <b>D. Venkataraman (1994)</b>. It has <b>50 items</b> and gives scores for right-hemisphere preference, left-hemisphere preference and integrated (whole-brain) functioning. It identifies a person's predominant information-processing preference, <b>not</b> general intelligence or ability.</p>
+ <div class="tbl"><table><thead><tr><th>Left hemisphere style (L)</th><th>Right hemisphere style (R)</th></tr></thead><tbody><tr><td>Verbal, logical</td><td>Visual, holistic</td></tr><tr><td>Sequential, step by step</td><td>Spatial, sees overall patterns</td></tr><tr><td>Analytical, detail-oriented</td><td>Intuitive, imaginative, non-linear</td></tr><tr><td>Systematic organisation</td><td>Creative associations</td></tr></tbody></table></div>
+ <h3>Applications</h3>
+ <p>SOLAT is used in educational and psychological research on individual differences in learning and thinking: links between hemispheric preference and <b>academic achievement, learning strategies, problem-solving, classroom preferences</b> and information-processing patterns. Results should be interpreted cautiously because the test does not directly measure brain activity.</p>
+ <h3>Limitations of the left-brain / right-brain approach</h3>
+ <p>Modern research supports functional specialisation and lateralisation, but calling people simply “left-brained” or “right-brained” is an <mark>oversimplification</mark>. Both hemispheres take part in most complex activities. Psychometric research on the original SOLAT also found insufficient evidence for sorting people into fixed left- or right-brain styles. SOLAT is best understood as a measure of <b>reported learning and thinking preferences</b>, not a neurological measure of dominance.</p>`,
+ aim:"To assess the dominance of the hemisphere in the styles of learning and thinking by administering the SOLAT tool.",hyp:null,
+ plan:"To administer the tool according to the instructions in the manual and score items using the scoring key. Interpretation of scores is done as per the norms given in the manual.",
+ materials:["SOLAT tool","Manual","Norms for interpretation","Writing material"],vars:null,
+ instr:"“Please read the following statements carefully. Each statement has two parts, A and B, followed by boxes. Put a tick mark in the box for whichever statements are true for you. You may tick both statements if both in a pair are true for you, or you may leave both if neither is true for you.”",
+ proc:["The tool uses simple sentences and can be given from 8th standard students up to postgraduates.","Arrange and maintain good testing conditions throughout.","Give the instructions.","The subject records responses on the test sheet and checks that marks are firm, so hemisphere dominance can be assessed correctly."],
+ prec:["Give instructions clearly","Help the subject with the meaning of difficult words","Administer to students of 8th standard and above","Make sure tick marks are firm and clear"],
+ scoring:`<div class="tbl"><table><thead><tr><th>Response</th><th>Counted as</th></tr></thead><tbody><tr><td>Statement (a) ticked</td><td><b>R</b> (right)</td></tr><tr><td>Statement (b) ticked</td><td><b>L</b> (left)</td></tr><tr><td>Both ticked</td><td><b>I / W</b> (integrated / whole)</td></tr><tr><td>Neither ticked</td><td>Not counted</td></tr></tbody></table></div>
+ <p>Count totals of R, L and W. Convert each raw score to a <b>sten score</b> and interpret as high, average or low using the norms. <mark>Hemisphere dominance = the category with the highest score.</mark></p>`,
+ results:`<p class="hint">Table 1: scores on SOLAT</p><div class="tbl"><table><thead><tr><th>Hemisphere</th><th>Right</th><th>Left</th><th>Whole</th><th>Hemisphericity</th></tr></thead><tbody><tr><td>Raw score</td><td>28</td><td>11</td><td>9</td><td rowspan="3"><b>Right</b></td></tr><tr><td>Sten score</td><td>7</td><td>4</td><td>5</td></tr><tr><td>Interpretation</td><td>Average</td><td>Average</td><td>Average</td></tr></tbody></table></div>
+ <h4>Discussion pointers</h4><ul class="pts"><li>Right (28, sten 7): preference for visual, holistic, intuitive, imaginative, non-linear processing.</li><li>Left (11, sten 4): uses logical, sequential, analytical strategies to a moderate extent, but less preferred.</li><li>Whole (9, sten 5): moderate ability to combine both.</li><li>Add the caution that this is a preference, not literal brain dominance.</li></ul>
+ <h4>Conclusion</h4><p>The results indicate right hemisphere dominance in the subject's style of learning and thinking.</p>`,
+ rapport:[
+ ["Flat-pack furniture","You've bought new furniture that comes in pieces. Do you read the manual step by step or look at the picture and figure it out?","Sequential (L) vs holistic (R)."],
+ ["Lost without maps","You're lost in a new city with no Google Maps. Do you ask for directions in words or look for landmarks?","Verbal vs spatial."],
+ ["Retelling a movie","When you tell a friend about a movie, do you go scene by scene or describe the overall vibe?","Sequential vs holistic."],
+ ["Two offers","You get two good offers. Do you make a pros-and-cons list or go with your gut?","Logical vs intuitive."],
+ ["Exam notes","Your exam is tomorrow. Detailed written notes, or mind maps and diagrams?","Verbal vs visual learning."],
+ ["Surprise party","You're planning a surprise party. Do you start with the budget and checklist, or the theme and the feel?","Analytical vs imaginative."],
+ ["Riddle","Someone gives you a riddle. Do you work it out logically, or does the answer just pop into your head?","Analysis vs insight."],
+ ["Novelist or painter","If you had to be a novelist or a painter for a year, which would you choose?","Verbal vs visual expression."],
+ ["Both?","Has there been a situation where you had to use both a plan and a hunch to solve something?","Integrated (W) style."]
+ ],rapportNote:"Don't say “left brain” or “right brain” while doing rapport. It can bias how they tick the pairs."},
+{id:"pf16",grp:"Experiments",kind:"exp",n:"5",name:"16 Personality Factors (16PF)",art:"pf16",cap:"Sten 1–10, population mean 5.5.",lab:"stenLab",
+ intro:`<h3>Personality</h3><p>Personality refers to <mark>individual differences in characteristic patterns of thinking, feeling and behaving</mark>. It reflects how a person consistently interacts with their environment and others, shaped by both biological and environmental influences.</p>
+ <h3>Trait theories of personality</h3>
+ <dl class="terms"><dt>Gordon Allport</dt><dd>Emphasised the uniqueness of each personality. Traits at three levels: <b>cardinal</b> (dominate and shape behaviour), <b>central</b> (basic characteristics found to varying degrees in everyone) and <b>secondary</b> (situation-dependent). Traits are stable and shape motivation and action.</dd>
+ <dt>Raymond Cattell</dt><dd>Developed the <b>16PF Questionnaire</b> to measure 16 primary traits. Used <b>factor analysis</b> to identify them as the building blocks of personality, giving a detailed, quantitative model of individual differences.</dd>
+ <dt>Hans Eysenck</dt><dd>Three dimensions: extraversion vs introversion, neuroticism vs stability, and later psychoticism vs socialisation. Focused on the biological bases of traits.</dd>
+ <dt>Big Five / Five-Factor Model</dt><dd>Openness, Conscientiousness, Extraversion, Agreeableness and Neuroticism. A widely accepted framework for comparing personality across cultures.</dd></dl>
+ <h3>The 16 Personality Factor Questionnaire</h3>
+ <p>The 16PF was developed by British-American psychologist <b>Raymond Cattell</b>. Using factor analysis on a large pool of trait descriptions, he identified <mark>16 primary personality traits (source traits)</mark> that form the foundation of human personality. Surface traits are the visible clusters of behaviour; source traits are the deeper factors behind them. The 16PF assesses these traits through a self-report questionnaire, widely used in healthcare, employment, counselling and research.</p>
+ <div class="tbl"><table><thead><tr><th>Factor</th><th>Name</th><th>What it measures</th></tr></thead><tbody>
+ ${[["A","Warmth","Friendliness and affection vs detachment"],["B","Reasoning","Abstract thinking and intelligence"],["C","Emotional stability","Calmness vs emotional reactivity"],["E","Dominance","Assertiveness and control vs submission"],["F","Liveliness","Enthusiasm and spontaneity"],["G","Rule-consciousness","Adherence to rules, conscientiousness"],["H","Social boldness","Confidence in social situations"],["I","Sensitivity","Emotional sensitivity and tenderness"],["L","Vigilance","Suspicion vs trustfulness"],["M","Abstractedness","Imagination and abstract thinking"],["N","Privateness","Discretion and reserve"],["O","Apprehension","Self-doubt and anxiety"],["Q1","Openness to change","Receptiveness to new experiences"],["Q2","Self-reliance","Independence and self-sufficiency"],["Q3","Perfectionism","Organisation and thoroughness"],["Q4","Tension","Restlessness and impatience"]].map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("")}</tbody></table></div>
+ <h3>Second-order factors</h3>
+ <p>Broader dimensions derived from the primary traits that summarise personality structure:</p>
+ <dl class="terms"><dt>Extraversion</dt><dd>Outgoing, sociable, enjoys interaction.</dd><dt>Anxiety</dt><dd>Emotional instability, nervousness, susceptibility to stress.</dd><dt>Tough poise</dt><dd>Resilience, calmness and confidence under pressure.</dd><dt>Independence</dt><dd>Self-reliant, assertive, prefers autonomy.</dd><dt>Control</dt><dd>Self-discipline, organisation, impulse regulation.</dd><dt>Adjustment</dt><dd>Staying emotionally stable and coping with stress.</dd><dt>Leadership</dt><dd>Dominance, influence, taking charge.</dd><dt>Creativity</dt><dd>Openness, originality, imagination.</dd></dl>
+ <h3>Applications</h3>
+ <p>Used in <b>career counselling</b> to identify suitable vocational paths; in <b>clinical assessment</b> for information about emotional and behavioural characteristics; in <b>personnel selection</b> and HR to match profiles to job requirements; in <b>leadership development and team building</b>; in <b>research</b> on personality structure and outcomes; and in <b>couples counselling</b> to understand personality differences in relationships.</p>`,
+ aim:"To assess the source traits and surface traits of individuals using the 16PF Questionnaire.",hyp:null,
+ plan:"To administer the 16PF Questionnaire according to the manual, score responses with the stencil keys, convert raw scores to sten scores, and interpret the 16 primary and the second-order factors using the norms.",
+ materials:["16PF Questionnaire","Answer sheet","16PF test profile","Manual","Scoring template (stencils)","Writing materials"],vars:null,
+ instr:"“You can see certain questions and different choices of answer in the booklet. Your task is to read each question thoroughly and mark the answer of your choice. There are three choices: Yes, No and Uncertain. Give the first spontaneous answer that comes to your mind. Answers are to be marked on the response sheet. Do not skip any questions and try to answer as honestly as possible.”",
+ proc:["Seat the participant comfortably and establish good rapport.","Give the questionnaire; read the simple instructions printed on the cover page and clear any doubts.","After instructions, ask the participant to turn the page and begin.","After all questions are answered, collect the response sheet and check that name, age, sex etc. are filled in.","There is no time limit, but encourage accurate, spontaneous answers."],
+ prec:["Clear all doubts before the test begins","Answers marked only on the response sheet","No questions to be skipped","Encourage the first spontaneous answer; avoid too many ‘uncertain’ responses","Check identifying details on the answer sheet before collecting it"],
+ scoring:`<ul class="pts"><li>Each answer scores <b>0, 1 or 2</b>, except <b>Factor B</b> (reasoning): 0 for incorrect, 1 for correct.</li><li>Each item contributes to only <b>one</b> factor. Hand-scored with <b>two stencil keys</b> (one covers B, E, G, I, M, Q1, Q2, Q4); fit the stencil on the answer sheet and count the marks visible through the holes.</li><li>Sum the scores for each factor's raw score, then convert to <b>sten scores</b> (1–10, mean 5.5) and plot the profile.</li><li><b>Second-order factors</b> (extraversion, anxiety, tough poise, independence): multiply each sten by the weight in the circle on the scoring sheet, add the shaded columns, and subtract from the given constant. Weights differ for males and females.</li></ul>
+ <div class="tbl"><table><thead><tr><th>Sten</th><th>Interpretation (as used in the record)</th></tr></thead><tbody><tr><td>1–4</td><td>Low</td></tr><tr><td>5–6</td><td>Average</td></tr><tr><td>7–10</td><td>High</td></tr></tbody></table></div>
+ <h4>Low and high poles</h4><div class="tbl"><table><thead><tr><th>Factor</th><th>Low score (1–3)</th><th>High score (8–10)</th></tr></thead><tbody>
+ ${[["A","Reserved, detached","Warm, outgoing"],["B","Concrete thinking","Abstract thinking"],["C","Reactive, easily upset","Emotionally stable"],["E","Deferential, cooperative","Dominant, assertive"],["F","Serious, restrained","Lively, spontaneous"],["G","Expedient, nonconforming","Rule-conscious, dutiful"],["H","Shy, threat-sensitive","Socially bold"],["I","Utilitarian, tough-minded","Sensitive, sentimental"],["L","Trusting, accepting","Vigilant, suspicious"],["M","Grounded, practical","Abstracted, imaginative"],["N","Forthright, open","Private, discreet"],["O","Self-assured","Apprehensive, worried"],["Q1","Traditional","Open to change"],["Q2","Group-oriented","Self-reliant"],["Q3","Tolerates disorder","Perfectionistic"],["Q4","Relaxed, patient","Tense, driven"]].map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("")}</tbody></table></div>`,
+ results:`<p class="hint">Table 1: factor-wise trait scores</p><div class="tbl"><table><thead><tr><th>Factor</th><th>Trait</th><th>Raw</th><th>Sten</th><th>Interpretation</th></tr></thead><tbody>
+ ${[["A","Warmth",2,1,"Low"],["B","Reasoning",6,7,"High"],["C","Emotional stability",8,6,"Average"],["E","Dominance",4,4,"Low"],["F","Liveliness",1,1,"Low"],["G","Rule-consciousness",10,8,"High"],["H","Social boldness",3,3,"Low"],["I","Sensitivity",4,4,"Low"],["L","Vigilance",9,9,"High"],["M","Abstractedness",5,5,"Average"],["N","Privateness",8,8,"High"],["O","Apprehension",10,7,"High"],["Q1","Openness to change",6,5,"Average"],["Q2","Self-reliance",5,6,"Average"],["Q3","Perfectionism",8,6,"Average"],["Q4","Tension",7,6,"Average"]].map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join("")}</tbody></table></div>
+ <p class="hint">Table 2: second-order factor scores</p><div class="tbl"><table><thead><tr><th>Second-order factor</th><th>Score</th><th>Sten</th><th>Interpretation</th></tr></thead><tbody><tr><td>Extraversion</td><td>1.9</td><td>2</td><td>Low</td></tr><tr><td>Anxiety</td><td>6.3</td><td>6</td><td>Average</td></tr><tr><td>Tough poise</td><td>6.1</td><td>6</td><td>Average</td></tr><tr><td>Independence</td><td>4.1</td><td>4</td><td>Low</td></tr></tbody></table></div>
+ <h4>Discussion pointers</h4><ul class="pts"><li>Go factor by factor: “For Factor A: Warmth, the subject obtained a raw score of 2 and a sten of 1, interpreted as Low. This indicates…”</li><li>Explain second-order factors from the primaries (e.g. low extraversion comes from low A, F and H).</li><li>End with an integrated personality picture.</li></ul>
+ <h4>Conclusion</h4><p>The subject presents as analytical, conscientious and rule-abiding, introverted and guarded socially, accommodating, with balanced emotional stability.</p>`,
+ rapport:[
+ ["Stuck in a lift (A, F, H)","You're stuck in a lift with five strangers for an hour. What do you do in the first ten minutes?","Warmth, liveliness, social boldness."],
+ ["Leaderless project (E)","Your group project is going nowhere and nobody is leading. Do you take charge or wait for someone else?","Dominance."],
+ ["2 a.m. signal (G)","It's 2 a.m., the road is completely empty and the signal is red. Do you wait?","Rule-consciousness."],
+ ["Too-good deal (L)","A stranger online offers you a brand-new iPhone at half price. What's your first thought?","Vigilance."],
+ ["Bus stop mind (M)","While waiting for a bus, are you watching the road or lost in your own thoughts?","Abstractedness."],
+ ["Surprise speech (H, O)","You're suddenly asked to give a speech at a cousin's wedding with zero preparation. What goes on in your head?","Social boldness, apprehension."],
+ ["Exams scrapped (Q1)","Your college replaces all exams with projects overnight. Excited or annoyed?","Openness to change."],
+ ["Learning alone (Q2)","You want to learn a new skill. YouTube alone, or a class with friends?","Self-reliance."],
+ ["Messy room deadline (Q3, Q4)","Your room is a mess and a deadline is tomorrow. Clean first or work first? How restless do you feel?","Perfectionism, tension."]
+ ],rapportNote:"Situational questions mirror how 16PF items are written. Keep it to 2–3 before starting; don't discuss their answers in trait terms."},
+{id:"epq",grp:"Experiments",kind:"exp",n:"6",name:"Eysenck's Personality Questionnaire–Revised (EPQ-R)",art:"epq",cap:"E and N are independent axes. P was added later.",lab:"epqLab",
+ intro:`<h3>Personality</h3><p>Personality is a pattern of <b>relatively permanent traits and characteristics</b> that gives consistency and individuality to a person's behaviour (Feist & Feist, 2009). It includes differences in how people think, feel and behave, and explains why people respond differently to similar situations. Personality psychologists therefore use standardised inventories to assess stable characteristics; these are useful when they show adequate <b>reliability and validity</b>.</p>
+ <h3>Eysenck's theory and the EPQ-R</h3>
+ <p>The EPQ-R is a self-report inventory based on <b>Hans J. Eysenck's trait and biological theory</b>. Eysenck proposed that personality can be understood through a small number of broad, relatively independent dimensions. His final model had three: <mark>Psychoticism (P), Extraversion (E) and Neuroticism (N)</mark>, the <b>P-E-N model</b>. These are continuous dimensions, not fixed categories, so people fall at different points along each.</p>
+ <h3>Development of the tool</h3>
+ <p class="formula">MPI → EPI → EPQ (1975) → EPQ-R (1985)</p>
+ <p>The <b>Maudsley Personality Inventory (MPI)</b> came first and measured E and N. The <b>Eysenck Personality Inventory (EPI)</b> continued E and N and added a <b>Lie scale</b> to identify socially desirable responding. Eysenck and Eysenck then developed the <b>EPQ</b>, published in <b>1975</b>, which added <b>Psychoticism</b>; it had adult and junior forms.</p>
+ <p>The <b>EPQ-R</b> mainly aimed to improve the psychometric properties of the P scale. <b>Eysenck, Eysenck and Barrett (1985)</b> added new items to improve the P scale's internal reliability, widen the score range and make the distribution closer to normal. Four short 12-item scales (P, E, N, L) were also developed. The full EPQ-R has <b>100 items</b>; the short form has <b>48</b> (12 per scale).</p>
+ <h3>Major dimensions</h3>
+ <dl class="terms"><dt>Extraversion (E)</dt><dd>From extraversion to introversion. High scorers are sociable, lively, active, assertive, venturesome and impulsive; low scorers are quieter and more reserved. Eysenck saw E as one of the strongest, most consistently observed dimensions.</dd>
+ <dt>Neuroticism (N)</dt><dd>Emotional instability vs stability. High scorers show more anxiety, moodiness, tension, guilt and emotional reactivity; low scorers are calmer. N is a dimension of <b>normal</b> personality, not a mental disorder.</dd>
+ <dt>Psychoticism (P)</dt><dd>Added later. High scores: aggressiveness, impulsiveness, egocentricity, coldness, nonconformity, reduced empathy. Low end: socialisation, empathy, cooperation, conformity. Doesn't mean the person is psychotic.</dd>
+ <dt>Lie (L)</dt><dd>Detects socially desirable responding, which matters because the test relies on self-report. Present since the EPI.</dd></dl>
+ <h3>Indian version and adaptation</h3>
+ <p><b>Laungani (1985)</b> compared EPQ results from <b>558 Indian men and 636 Indian women</b> with the English standardisation sample. Factor analysis showed close correspondence (factor comparison indices above <b>.97</b>), with only slightly lower reliabilities. Some items that didn't work in India were replaced using items from the 101-item Indian version.</p>
+ <p>The <b>Hindi EPQ-R Short Form (EPQRS-H)</b> by <b>Tiwari, Singh and Singh (2009)</b> was translated and back-translated, then given to <b>202 Hindi-speaking students at Banaras Hindu University</b>. E, N and L showed satisfactory reliability; <b>P was less satisfactory</b>.</p>
+ <h3>Applications</h3>
+ <p>Used in clinical and health psychology, education, occupational settings and personality research: psychopathology, learning, creativity, social behaviour, criminality and health behaviours.</p>
+ <h3>Limitations</h3>
+ <p>The P scale has weaker psychometric properties than E and N. Studies report restricted ranges, skewed scores and item-functioning differences across groups. The three-factor model is broad and may miss traits captured by the Five-Factor Model.</p>`,
+ aim:"To assess the personality of the participant using Eysenck's Personality Questionnaire–Revised.",hyp:null,
+ plan:"To administer the EPQ-R to assess the characteristics of the subject on the three dimensions (P, E, N) and the Lie scale.",
+ materials:["Eysenck's Personality Questionnaire–Revised (EPQ-R)","Manual of EPQ-R","Stencil of EPQ-R","Writing materials"],vars:null,
+ instr:"“Answer each question by putting a mark in the box for ‘Yes’ or ‘No’. Give the first response that comes to your mind. There are no right or wrong answers and no trick questions. Work quickly and do not think too long about the exact meaning of the question.”",
+ proc:["Seat the subject comfortably and establish rapport.","Give the EPQ-R and the instructions.","The subject marks Yes or No for each question on the answer sheet.","Collect the answer sheet once all items are answered."],
+ prec:["Ensure the subject has understood the instructions clearly","Responses marked only on the answer sheet, not in the test booklet","The subject must not open the booklet until asked","Encourage quick, first responses"],
+ scoring:`<ul class="pts"><li>Score with the EPQ-R <b>stencils</b>. Each keyed answer gets <b>1 mark</b>. Add page totals for P, E, N and L to get <b>raw scores</b>.</li><li>Convert raw scores to <b>sten scores</b> using the manual.</li><li>Sten <b>5–6</b> = average strength of the factor; <b>1–4</b> = gradual decrease of strength; higher = greater strength.</li><li><b>Lie scale:</b> a score of <mark>7+ in males or 8+ in females</mark> means the results are rejected clinically (for academic practice they're still calculated).</li></ul>
+ <div class="tbl"><table><thead><tr><th>Dimension</th><th>Raw score</th><th>Interpretation</th></tr></thead><tbody><tr><td rowspan="3">Extraversion</td><td>17 and above</td><td>Extravert</td></tr><tr><td>8–16</td><td>Ambivert</td></tr><tr><td>Below 8</td><td>Introvert</td></tr><tr><td rowspan="3">Neuroticism</td><td>14 and above</td><td>High</td></tr><tr><td>5–13</td><td>Average</td></tr><tr><td>4 and below</td><td>Well balanced</td></tr></tbody></table></div>`,
+ results:`<p class="hint">Table 1: scores on Extraversion, Neuroticism, Psychoticism and Lie</p><div class="tbl"><table><thead><tr><th>No.</th><th>Dimension</th><th>Raw</th><th>Sten</th><th>Interpretation</th></tr></thead><tbody><tr><td>1</td><td>Psychoticism</td><td>4</td><td>7</td><td>Greater strength</td></tr><tr><td>2</td><td>Extraversion</td><td>10</td><td>4</td><td>Gradual decrease of strength</td></tr><tr><td>3</td><td>Neuroticism</td><td>4</td><td>2</td><td>Gradual decrease of strength</td></tr><tr><td>4</td><td>Lie</td><td>17</td><td>10</td><td>Greater strength</td></tr></tbody></table></div>
+ <h4>Discussion pointers</h4><ul class="pts"><li>Start with what the EPQ measures and the Lie scale's rejection rule.</li><li>Lie first: a high L means a strong tendency to present oneself favourably. Say it would be rejected clinically but is interpreted for academic purposes.</li><li>Then P, E and N one by one, linking to rapport observations (the record notes the subject said she dislikes rules, matching higher P).</li></ul>
+ <h4>Conclusion</h4><p>The subject shows high emotional stability, introversion, elevated nonconformity and high social desirability.</p>`,
+ rapport:[
+ ["Free trip (E)","You've won a free trip. Solo mountain retreat, or a group trip to Goa with ten people?","Extraversion–introversion."],
+ ["Friday night (E)","It's Friday night and you're free. A party full of new people, or a movie at home with one close friend?","Sociability."],
+ ["Library or café (E, arousal)","Would you rather study in a silent library or a buzzing café?","Eysenck's arousal theory: extraverts seek stimulation."],
+ ["Blue ticks (N)","Your friend reads your message and doesn't reply for six hours. What goes through your mind?","Neuroticism, worry."],
+ ["Mic dies on stage (N)","You're about to perform on stage and your mic suddenly stops working. What happens inside you?","Emotional reactivity."],
+ ["No-rules day (P)","If there were no rules at all for one day, which rule would you happily break first?","Psychoticism, nonconformity."],
+ ["Blunt or soft (P)","Your teammate keeps making the same mistake. Do you tell them bluntly or soften it?","Tough-mindedness vs empathy."],
+ ["World without white lies (L)","Imagine a world where nobody can tell even a tiny white lie. Better, or way more awkward?","Social desirability (Lie scale)."]
+ ],rapportNote:"Don't ask “Have you ever lied…?” directly. That's close to actual Lie-scale items and can make them defensive."},
+{id:"neo",grp:"Experiments",kind:"exp",n:"7",name:"NEO Five-Factor Inventory-3 (NEO-FFI-3)",art:"neo",cap:"Five broad domains, no facets.",lab:"neoLab",
+ intro:`<h3>Personality</h3><p>Personality is a pattern of relatively permanent traits and unique characteristics that give <b>consistency and individuality</b> to behaviour. Traits contribute to individual differences, consistency over time and stability across situations. Characteristics include temperament, physique and intelligence.</p>
+ <h3>About the NEO-FFI-3</h3>
+ <p>The <mark>NEO Five-Factor Inventory-3</mark> is a concise <b>60-item</b> instrument assessing the five major domains of personality. It is a short-form revision of the original NEO-FFI, <b>replacing 15 items</b> to improve readability and psychometric properties for people aged <b>12 and older</b>. It uses five <b>12-item scales</b> to measure each domain broadly, without the underlying facets. There are two parallel forms: <b>Form S</b> for self-reports and <b>Form R</b> for observer ratings by peers, spouses or experts.</p>
+ <h3>Theories behind the NEO-FFI-3</h3>
+ <p>The NEO-FFI-3 is rooted in the <b>trait perspective</b>, which identifies, measures and classifies stable behavioural dispositions. Traits are treated as <b>continuous, normally distributed dimensions</b> along a bell curve, not rigid clinical categories. The main framework is the <mark>Five-Factor Model (FFM)</mark>, which grew from the <b>lexical tradition</b> of Gordon Allport and Raymond Cattell and was developed into a full theory by <b>Robert McCrae and Paul Costa Jr.</b></p>
+ <dl class="terms"><dt>Five-Factor Theory (FFT)</dt><dd>Separates <b>basic tendencies</b> (biologically rooted traits) from <b>characteristic adaptations</b> (how traits show up as habits, behaviours and attitudes shaped by the environment). Traits are stable, endogenous and strongly influenced by genetics.</dd>
+ <dt>Hierarchical structure</dt><dd>Broad domains sit at the top, supported by specific <b>facets</b> below. The full NEO-PI-3 measures facets; the NEO-FFI-3 samples only the broad domains for an efficient overview.</dd>
+ <dt>Consensual and construct validation</dt><dd>A person's self-schema (Form S) can be validated against observer ratings (Form R). Comparing them tests evaluative bias, self-insight and cross-observer agreement.</dd></dl>
+ <h3>The five major factors</h3>
+ <dl class="terms"><dt>Neuroticism (N)</dt><dd>Emotional stability vs instability. High scorers are prone to distress and negative affect (anxiety, sadness, anger) and maladaptive coping. Low scorers are calm, even-tempered, resilient.</dd>
+ <dt>Extraversion (E)</dt><dd>Sociability, activity, energy. Extraverts are outgoing, assertive, talkative and responsive to excitement and reward. Introverts prefer solitude and are reserved and independent.</dd>
+ <dt>Openness to Experience (O)</dt><dd>Cognitive flexibility and curiosity: active imagination, aesthetic appreciation, receptivity to feelings, willingness to question tradition. Closed people prefer convention and familiar routines.</dd>
+ <dt>Agreeableness (A)</dt><dd>Interpersonal tendencies and trust. High scorers are empathetic, cooperative, altruistic and avoid conflict. Low scorers (antagonistic) are competitive, sceptical and self-focused.</dd>
+ <dt>Conscientiousness (C)</dt><dd>Impulse control, organisation and willpower. High scorers are purposeful, organised, scrupulous, punctual and goal-driven. Low scorers are casual and easily distracted.</dd></dl>
+ <h3>Applications</h3>
+ <p>In <b>counselling, psychiatry and clinical psychology</b>, the profile helps understand clients, formulate diagnoses, build empathy, choose treatments and anticipate the course of therapy. In <b>industrial/organisational psychology and vocational counselling</b>, it supports career placement and job profiling. It is also used in research on <b>educational psychology, behavioural genetics, cross-cultural studies and health psychology</b>.</p>`,
+ aim:"To assess the personality of the subject by administering the NEO Five-Factor Inventory.",hyp:null,
+ plan:"Administer the scale to the subject. The answer sheet is given and the subject's responses are recorded. Scoring and interpretation are done based on the norms.",
+ materials:["NEO Five-Factor Inventory booklet","Manual","Norms","Writing materials"],vars:null,
+ instr:"“This questionnaire consists of 60 statements. Read each statement carefully. For each statement there are five alternatives. Choose the response that best represents your opinion. Make sure that your answer is in the correct box. There is no right or wrong answer; the right answer is only what you feel about yourself. Your answers will be kept confidential.”",
+ proc:["Seat the subject comfortably and establish good rapport.","Give the instructions.","Administer the questionnaire; the subject marks one of five options from strongly disagree to strongly agree.","Collect the answer sheet once all 60 items are answered."],
+ prec:["The subject should not omit any items","Get the full cooperation of the subject","Assure the subject of confidentiality","Check answers are in the correct boxes"],
+ scoring:`<ul class="pts"><li>Five alternatives per item, from <b>strongly disagree</b> to <b>strongly agree</b>.</li><li><b>Positive</b> and <b>negative (reverse-keyed)</b> items are scored differently.</li><li>Sum each domain's 12 items for a <b>raw score</b>, convert to a <b>T-score</b> (mean 50, SD 10) with the norms.</li></ul>
+ <div class="tbl"><table><thead><tr><th>T-score</th><th>Band</th></tr></thead><tbody><tr><td>34 and below</td><td>Very low</td></tr><tr><td>35–44</td><td>Low</td></tr><tr><td>45–55</td><td>Average</td></tr><tr><td>56–65</td><td>High</td></tr><tr><td>66 and above</td><td>Very high</td></tr></tbody></table></div><p class="hint">These are the usual NEO bands and match your record's interpretations. Confirm against your department's manual.</p>`,
+ results:`<p class="hint">Table 1: scores on the NEO Five-Factor Inventory</p><div class="tbl"><table><thead><tr><th>Factor</th><th>Raw</th><th>T</th><th>Interpretation</th></tr></thead><tbody><tr><td>Neuroticism</td><td>20</td><td>47</td><td>Average</td></tr><tr><td>Extraversion</td><td>39</td><td>66</td><td>Very high</td></tr><tr><td>Openness</td><td>35</td><td>59</td><td>High</td></tr><tr><td>Agreeableness</td><td>27</td><td>38</td><td>Low</td></tr><tr><td>Conscientiousness</td><td>31</td><td>47</td><td>Average</td></tr></tbody></table></div>
+ <h4>Discussion pointers</h4><ul class="pts"><li>Go domain by domain: raw score, T-score, band, then meaning.</li><li>Link to rapport observations (the record notes the subject's sociability matched very high E, while her own view of agreeableness didn't match her low score).</li><li>Don't forget Openness in the discussion. The record's discussion skips it.</li></ul>
+ <h4>Conclusion</h4><p>The subject is very high in Extraversion, high in Openness, average in Neuroticism and Conscientiousness, and low in Agreeableness.</p>`,
+ rapport:[
+ ["Time travel swap (O)","If you could swap lives with anyone from history for a week, who would it be and why?","Openness, imagination."],
+ ["Mystery dish (O)","A restaurant has a “mystery dish” nobody has tried. Do you order it?","Openness to new experience."],
+ ["Two weeks to exams (C)","Your exam is two weeks away. Do you already have a timetable, or a solid “I'll start tomorrow” plan?","Conscientiousness."],
+ ["₹1 lakh prize (C)","Imagine you win ₹1 lakh tomorrow. Save it, invest it, or spend it?","Impulse control, planning."],
+ ["Party entry (E)","You walk into a party where you only know the host. What's your first move?","Extraversion."],
+ ["Bad haircut (A)","Your friend asks you to honestly rate their new haircut, and it's bad. What do you say?","Agreeableness, tact vs bluntness."],
+ ["Debate clash (A)","In a group discussion someone says something you totally disagree with. Argue, or let it go?","Cooperation vs competition."],
+ ["Delayed flight (N)","Your flight gets delayed by five hours at the airport. Chill or stressed?","Neuroticism, emotional reactivity."]
+ ],rapportNote:"One question per domain is plenty. Pick the ones that fit the subject's interests."},
+{id:"bell",grp:"Experiments",kind:"exp",n:"8",name:"Bell's Adjustment Inventory",art:"bell",cap:"High score = poor adjustment in that area.",lab:"bellLab",
+ intro:`<p>According to the <b>American Psychological Association</b>, adjustment refers to <mark>“a change in attitude, behavior, or both by an individual on the basis of some recognized need or desire to change, particularly to account for the current environment or changing, atypical, or unexpected conditions.”</mark></p>
+ <h3>Adjustment disorders</h3>
+ <p>Adjustment disorders are mental health conditions triggered by emotional or behavioural responses to <b>stressful events</b> such as financial trouble, medical issues or relationship conflict. Symptoms typically appear <b>within three months</b> of the stressor and may include anxiety, depression or behavioural changes.</p>
+ <p>They affect <b>2% to 8%</b> of the population and are more common in women and adolescents, often due to academic challenges, family conflict or substance use. In adults, triggers include marital and financial problems, with high prevalence among hospitalised patients facing health stressors. Age, personality, cultural background and psychodynamic factors (early relationships, defence mechanisms) shape vulnerability.</p>
+ <h3>Diagnosis and clinical features</h3>
+ <p>Adults often show depressive or anxious features, or both. Behaviour may include reckless driving, substance use, withdrawal and insomnia. <b>DSM-5</b> describes six types:</p>
+ <dl class="terms"><dt>With depressed mood</dt><dd>Tearfulness, sadness, hopelessness. Distinguish from major depression and bereavement.</dd><dt>With anxiety</dt><dd>Agitation, palpitations, jitteriness. Distinguish from anxiety disorders.</dd><dt>With mixed anxiety and depressed mood</dt><dd>Features of both, not meeting other disorders' criteria.</dd><dt>With disturbance of conduct</dt><dd>Violating norms or others' rights; distinct from conduct disorder or antisocial personality disorder.</dd><dt>With mixed disturbance of emotions and conduct</dt><dd>Emotional disturbance plus behavioural misconduct.</dd><dt>Unspecified</dt><dd>Atypical reactions such as extreme denial, social withdrawal or non-compliance with treatment.</dd></dl>
+ <h3>The adjustment inventory</h3>
+ <p><b>Bell's Adjustment Inventory (Adult Form)</b> measures personal and social adjustment in <mark>five areas: home, health, social, emotional and occupational</mark>. <b>High scores indicate unsatisfactory adjustment; low scores indicate satisfactory adjustment.</b> A high home score suggests difficulty with the home environment; high health, social, emotional or occupational scores suggest poor health habits, social withdrawal, emotional instability or job dissatisfaction.</p>
+ <p>It is an effective tool in <b>adult counselling</b>: separate measures let counsellors compare individuals and pinpoint problem areas. It is <b>self-administering</b>, with clear instructions and a completion time of about <b>25 minutes</b>. Counsellors should secure cooperation, address concerns openly and keep results confidential.</p>
+ <h3>Reliability and validity</h3>
+ <p><b>Reliability</b> coefficients range from <b>0.81 to 0.94</b> across sections, obtained with the <b>Spearman-Brown formula</b> on employed individuals aged 23–28. <b>Validity</b> was established through careful item selection and by differentiating extreme cases identified by experienced counsellors from various counselling bureaus and institutions.</p>
+ <p>By identifying adjustment difficulties, the inventory helps adults achieve better self-understanding and resolve personal and social challenges.</p>`,
+ aim:"To assess the level of adjustment of the participant using Bell's Adjustment Inventory.",hyp:null,
+ plan:"To administer Bell's Adjustment Inventory and determine the participant's adjustment in five areas: home, health, social, emotional and occupational.",
+ materials:["Bell's Adjustment Inventory","Scoring key","Norms","Writing material"],vars:null,
+ instr:"“Here are some questions. Read each question carefully and answer honestly and thoughtfully. Your honest answers will help you obtain a better understanding of yourself. There are no right or wrong answers. Indicate your answer to each question by drawing a circle around ‘Yes’, ‘No’ or ‘?’ against the serial number. There is no time limit, but work rapidly. Your answers will be kept confidential, so feel free to give candid replies. If you are not employed now, answer the occupational questions with reference to the last position you held. Housewives not employed outside the home should omit questions about working conditions.”",
+ proc:["Establish rapport with the participant.","Give the instructions.","Administer the inventory; the participant circles Yes, No or ? for each item.","Score the responses using the answer key."],
+ prec:["Build rapport before administering so the subject answers honestly","Ensure instructions are understood","Assure the subject their identity won't be revealed","The subject interprets questions for themselves; explain only if they can't understand","Secure complete cooperation","No questions to be omitted","Use ‘?’ only when unable to decide Yes or No","If asked about the letters/numbers before questions, say they correspond to areas on the first page and are used in analysis"],
+ scoring:`<ul class="pts"><li>Score each area with the <b>scoring key</b>: if the subject's answer matches the keyed answer, score <b>1</b>; if not, <b>0</b>. <b>‘?’ is not scored.</b></li><li>Total the responses in each area, then interpret using the descriptive norms for men or women.</li></ul>
+ <p class="hint">Norms</p><div class="tbl"><table><thead><tr><th>Area</th><th>Description</th><th>Men</th><th>Women</th></tr></thead><tbody>
+ <tr><td rowspan="5"><b>Home</b></td><td>Excellent</td><td>0–1</td><td>0–1</td></tr><tr><td>Good</td><td>2–3</td><td>2–3</td></tr><tr><td>Average</td><td>4–11</td><td>4–12</td></tr><tr><td>Unsatisfactory</td><td>12–16</td><td>13–17</td></tr><tr><td>Very unsatisfactory</td><td>Above 16</td><td>Above 17</td></tr>
+ <tr><td rowspan="5"><b>Health</b></td><td>Excellent</td><td>0–1</td><td>0–1</td></tr><tr><td>Good</td><td>2–3</td><td>2–4</td></tr><tr><td>Average</td><td>4–8</td><td>5–9</td></tr><tr><td>Unsatisfactory</td><td>9–13</td><td>10–14</td></tr><tr><td>Very unsatisfactory</td><td>Above 13</td><td>Above 14</td></tr>
+ <tr><td rowspan="5"><b>Social</b></td><td>Very aggressive</td><td>0–2</td><td>0–4</td></tr><tr><td>Aggressive</td><td>3–6</td><td>5–8</td></tr><tr><td>Average</td><td>7–15</td><td>9–19</td></tr><tr><td>Retiring</td><td>16–20</td><td>20–24</td></tr><tr><td>Very retiring</td><td>Above 20</td><td>Above 24</td></tr>
+ <tr><td rowspan="5"><b>Emotional</b></td><td>Excellent</td><td>0–1</td><td>0–2</td></tr><tr><td>Good</td><td>2–3</td><td>3–6</td></tr><tr><td>Average</td><td>4–11</td><td>7–15</td></tr><tr><td>Unsatisfactory</td><td>12–15</td><td>16–20</td></tr><tr><td>Very unsatisfactory</td><td>Above 15</td><td>Above 20</td></tr>
+ <tr><td rowspan="5"><b>Occupational</b></td><td>Excellent</td><td>0–1</td><td>0–1</td></tr><tr><td>Good</td><td>2–4</td><td>2–4</td></tr><tr><td>Average</td><td>5–13</td><td>5–13</td></tr><tr><td>Unsatisfactory</td><td>14–17</td><td>14–17</td></tr><tr><td>Very unsatisfactory</td><td>Above 17</td><td>Above 17</td></tr>
+ <tr><td rowspan="5"><b>Total</b></td><td>Excellent</td><td>0–8</td><td>0–16</td></tr><tr><td>Good</td><td>9–21</td><td>17–30</td></tr><tr><td>Average</td><td>22–47</td><td>31–58</td></tr><tr><td>Unsatisfactory</td><td>48–60</td><td>59–71</td></tr><tr><td>Very unsatisfactory</td><td>Above 60</td><td>Above 71</td></tr></tbody></table></div>`,
+ results:`<p class="hint">Table 1: areas of adjustment, scores and description</p><div class="tbl"><table><thead><tr><th></th><th>Adjustment area</th><th>Score</th><th>Description</th></tr></thead><tbody><tr><td>a</td><td>Home</td><td>7</td><td>Average</td></tr><tr><td>b</td><td>Health</td><td>10</td><td>Unsatisfactory</td></tr><tr><td>c</td><td>Social</td><td>16</td><td>Average</td></tr><tr><td>d</td><td>Emotional</td><td>23</td><td>Very unsatisfactory</td></tr><tr><td>e</td><td>Occupational</td><td>4</td><td>Good</td></tr><tr><td></td><td><b>Total</b></td><td><b>57</b></td><td><b>Average</b></td></tr></tbody></table></div>
+ <h4>Discussion pointers</h4><ul class="pts"><li>Start with the aim and how rapport and confidentiality were handled.</li><li>Go area by area: score, description, meaning. Use “adjustment” language; a health score doesn't diagnose any condition.</li><li>Name the relative strength (occupational) and the area needing attention (emotional).</li></ul>
+ <h4>Conclusion</h4><p>The subject has good occupational adjustment, average home and social adjustment, unsatisfactory health adjustment and very unsatisfactory emotional adjustment, with an overall average level of adjustment.</p>`,
+ rapport:[
+ ["House rule (Home)","If you could add one new house rule that everyone at home must follow, what would it be?","Home adjustment."],
+ ["Family sitcom (Home)","If your family were a TV show, what genre would it be?","Home atmosphere, kept playful."],
+ ["Extra hour (Health)","If you got one extra hour every day just for your body, what would you spend it on?","Health habits."],
+ ["New hostel dinner (Social)","You've just moved into a new hostel and dinner is in ten minutes. Sit with a group, or eat on your own?","Social: aggressive vs retiring."],
+ ["Party role (Social)","At a party, are you the host, the DJ, or the one in the corner having a deep chat with one person?","Social adjustment style."],
+ ["Rainy bad day (Emotional)","Imagine a rainy day where everything goes wrong. What's the one thing that would flip your mood?","Emotional coping, kept positive."],
+ ["Dream workplace (Occupational)","If you could design your dream workplace, what would it look like?","Occupational adjustment."],
+ ["6 p.m. task (Occupational)","Your professor gives you a task at 6 p.m. that's due next morning. How do you handle it?","Work demands and coping."]
+ ],rapportNote:"Bell's touches personal areas, so keep rapport light and hypothetical. Don't probe real family or health problems before the test."}
+];
+INTROS.push({id:"viva",kind:"intro",grp:"Viva intros",n:"V",name:"Viva essentials",art:"scores",cap:"Same person, four ways to say where they stand.",lab:"scoreLab",
+ body:`<p>The stuff examiners ask about <b>every</b> practical: timing, score types, biology, MD and what each test is actually for.</p>
+ <h3>Stopwatch & standardisation</h3><ul class="pts"><li>The stopwatch times <b>presentation, recall, response and rest</b> so every participant gets the same conditions.</li><li>Reset before starting, know which event starts and stops it, record the time immediately, no extra cues during a timed trial.</li><li><mark>Standardisation</mark> = same instructions, same procedure for everyone. It cuts examiner-caused variation.</li><li>Timed practicals: cueing (2 s/word, 3 min recall, 5 min rest), chunking (2 s/card, 15 s recall, 5 min rest, 10 cards), Bell's (~25 min). MIQ has no time limit.</li></ul>
+ <h3>Observation</h3><p>Note cooperation, attention, confusion, interruptions, fatigue, odd response patterns. Write it <b>objectively</b>: "looked away several times during presentation", not "was careless". Observation supports scoring, it never replaces it.</p>
+ <h3>Score conversions</h3><div class="tbl"><table><thead><tr><th>Score</th><th>Meaning</th><th>Formula / scale</th></tr></thead><tbody>
+ <tr><td>Raw</td><td>Direct score before norms</td><td>Means nothing alone</td></tr>
+ <tr><td>z</td><td>Distance from mean in SD units</td><td>z = (X − M) / SD</td></tr>
+ <tr><td>T</td><td>Mean 50, SD 10</td><td>T = 50 + 10z</td></tr>
+ <tr><td>Sten</td><td>Standard ten, mean 5.5, SD 2</td><td>1–2 very low · 3–4 low · 5–6 avg · 7–8 high · 9–10 very high</td></tr>
+ <tr><td>Percentile</td><td>% of norm group at or below you</td><td>75th percentile ≠ 75% marks</td></tr></tbody></table></div>
+ <h3>Biological basis (safe viva wording)</h3><dl class="terms"><dt>Extraversion</dt><dd>Eysenck: extraverts have <b>lower baseline cortical arousal</b>, so they seek stimulation.</dd><dt>Neuroticism</dt><dd>Linked to emotional / autonomic reactivity and stress sensitivity. Normal dimension, not a disorder.</dd><dt>Psychoticism</dt><dd>Biologically influenced cluster: impulsive, nonconforming, tough-minded. Doesn't mean psychosis.</dd><dt>Big Five / 16PF</dt><dd>Genetic influences, but expression is shaped by learning and culture. No single brain area per factor.</dd><dt>Memory & attention</dt><dd>Distributed networks (hippocampus / medial temporal lobe for memory). Imagery recruits perception systems.</dd></dl>
+ <p class="formula">"The trait has biological and genetic correlates, but it emerges from multiple interacting systems and environmental influences."</p>
+ <h3>16PF Motivational Distortion (MD)</h3><p>In Forms C/D, <mark>MD flags faking good</mark> or overly favourable self-presentation. Score the MD items with the Form C key, sum to a raw score, interpret with the form's manual. A high MD <b>doesn't automatically invalidate</b> the profile and isn't proof of lying.</p>
+ <h3>Utility of each test</h3><div class="tbl"><table><thead><tr><th>Test</th><th>Purpose</th><th>Practical use</th></tr></thead><tbody>
+ <tr><td>Cueing</td><td>Effect of cues on retrieval</td><td>Prompts in memory support, rehab</td></tr><tr><td>Chunking</td><td>Effect of grouping on recall</td><td>Breaking study material into units</td></tr><tr><td>MIQ</td><td>Vividness of imagery</td><td>Imagery rehearsal, relaxation, guided imagery</td></tr><tr><td>SOLAT</td><td>Learning-thinking preference</td><td>Study strategy counselling</td></tr><tr><td>16PF</td><td>16 factors</td><td>Counselling, career guidance, HR</td></tr><tr><td>EPQ-R</td><td>P, E, N + Lie</td><td>Sociability, reactivity, response style</td></tr><tr><td>NEO-FFI-3</td><td>Big Five</td><td>Coping and interpersonal patterns, treatment planning</td></tr><tr><td>Bell's</td><td>5 adjustment areas</td><td>Spotting areas to explore in counselling</td></tr></tbody></table></div>
+ <h3>Quick-fire answers</h3><dl class="terms"><dt>Can a test diagnose alone?</dt><dd>No. Use it with interview, history, observation and context.</dd><dt>Trait vs state</dt><dd>Stable tendency vs temporary condition.</dd><dt>Is a high score always good?</dt><dd>No. Depends on construct, scale direction and norms.</dd><dt>Forgot a cut-off?</dt><dd>State the scoring principle, say the exact cut-off is in the manual. <b>Don't guess.</b></dd><dt>Why rapport?</dt><dd>Comfort, understanding of instructions, cooperation. It helps but doesn't guarantee honest answers.</dd></dl>`,
+ tip:"If you blank on a number in the viva, the guide's line is gold: <b>\"The principle is X; the exact cut-off is in the test manual.\"</b> Examiners prefer that to a wrong guess."});
+
+/* ---------- Labs ---------- */
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const words=t=>t.toLowerCase().split(/[^a-z]+/).filter(Boolean);
+const countHits=(typed,list)=>new Set(words(typed).filter(w=>list.includes(w))).size;
+let runId=0;
+
+const LABS={
+scoreLab(el){
+ el.innerHTML=`<p>Enter a raw score with the norm group's mean and SD. Try the guide's example: mean 50, SD 10, raw 70.</p>
+ <div class="row"><label>Raw X <input type="number" id="zx" value="70" style="width:90px"></label><label>Mean <input type="number" id="zm" value="50" style="width:90px"></label><label>SD <input type="number" id="zs" value="10" min="0.1" step="0.1" style="width:90px"></label></div><div class="out" id="zo"></div>`;
+ const cdf=z=>{const t=1/(1+.2316419*Math.abs(z)),d=.3989423*Math.exp(-z*z/2),p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return z>0?1-p:p};
+ const upd=()=>{const x=+$("#zx").value,m=+$("#zm").value,s=+$("#zs").value;if(!(s>0)){$("#zo").textContent="SD must be above 0.";return}
+  const z=(x-m)/s,T=50+10*z,st=Math.min(10,Math.max(1,Math.round(5.5+2*z))),pc=Math.round(cdf(z)*100);
+  $("#zo").innerHTML=`z = (${x} − ${m}) / ${s} = <b>${z>=0?"+":""}${z.toFixed(2)}</b> · T = 50 + 10z = <b>${T.toFixed(0)}</b> · sten ≈ <b>${st}</b> · percentile ≈ <b>${pc}</b><br><span class="hint">Approximate, assuming a normal distribution. Real tests use their own norm tables.</span>`};
+ el.querySelectorAll("input").forEach(i=>i.oninput=upd);upd();
+},
+cueLab(el){
+ const A=["window","river","pencil","garden","doctor","candle","bottle","engine","forest","mirror","ladder","button"];
+ const CAT={Fruits:["mango","grape","banana"],Animals:["tiger","rabbit","horse"],Colours:["purple","yellow","orange"],Furniture:["table","sofa","shelf"]};
+ const B=shuffle(Object.values(CAT).flat());
+ let a=null;
+ el.innerHTML=`<p>Mini version of Experiment 1. 12 words per list, shown for 1.5 s each. Series 1 is free recall, Series 2 gives you category cues.</p>
+ <div class="stage" id="cs">Ready?</div><div id="cin"></div><div class="row"><button class="btn primary" id="cgo">Start Series 1</button></div><div class="out" id="cout"></div>`;
+ const show=async(list)=>{const id=++runId;$("#cgo").disabled=true;$("#cin").innerHTML="";for(const w of list){if(id!==runId)return false;$("#cs").textContent=w;await wait(1500)}$("#cs").textContent="Recall now";return id===runId};
+ $("#cgo").onclick=async()=>{
+  if(a===null){ if(!await show(shuffle(A)))return;
+   $("#cin").innerHTML=`<label for="cfree" class="hint">Type every word you remember, any order</label><textarea id="cfree"></textarea>`;
+   $("#cgo").disabled=false;$("#cgo").textContent="Score & start Series 2";$("#cfree").focus();a=-1; }
+  else if(a===-1){ a=countHits($("#cfree").value,A); if(!await show(B))return;
+   $("#cin").innerHTML=`<div class="cuegrid">${Object.keys(CAT).map(c=>`<label>${c}<input data-c="${c}" aria-label="${c} words"></label>`).join("")}</div>`;
+   $("#cgo").disabled=false;$("#cgo").textContent="Score Series 2";$("#cin input").focus(); }
+  else { const typed=[...document.querySelectorAll("#cin input")].map(i=>i.value).join(" "); const b=countHits(typed,B);
+   $("#cout").innerHTML=`Series 1 (free): <b>${a}/12</b> · Series 2 (cued): <b>${b}/12</b> · Difference = ${b} − ${a} = <b>${b-a}</b><br><span class="verdict">${b>a?"Cueing helped, hypothesis supported":"No cueing benefit this time"}</span>`;
+   $("#cgo").textContent="Run again";a=null;$("#cs").textContent="Ready?";$("#cin").innerHTML=""; }
+ };
+},
+chunkLab(el){
+ const C="BCDFGHJKLMNPRSTVZ",V="AEIOU",r=s=>s[Math.random()*s.length|0],cvc=()=>r(C)+r(V)+r(C);
+ const make=()=>{const s=[],k=[];for(let i=0;i<4;i++){s.push(cvc()+cvc()+cvc());k.push(cvc()+"-"+cvc()+"-"+cvc())}return [...s.map(x=>[x,0]),...k.map(x=>[x,1])]};
+ let trials,i,score;
+ el.innerHTML=`<p>Mini version of Experiment 2: 4 strings without chunks, then 4 chunked. Each shows for 2 s. Type the letters in order (use _ for a letter you forgot).</p>
+ <div class="stage mono" id="ks">BGH-IEK-MON</div><div class="row"><input id="kin" class="mono" autocomplete="off" aria-label="Letters you saw" placeholder="type letters" disabled><button class="btn primary" id="kgo">Start</button></div><div class="out" id="kout"></div>`;
+ const next=async()=>{const id=++runId;if(i>=trials.length){const n=score[0]/4,c=score[1]/4;$("#ks").textContent="Done";$("#kout").innerHTML=`Average span: non-chunked <b>${n.toFixed(1)}</b> · chunked <b>${c.toFixed(1)}</b> · D = <b>${(c-n).toFixed(1)}</b><br><span class="verdict">${c>n?"Chunking improved recall":"No chunking benefit this run"}</span>`;$("#kgo").textContent="Run again";$("#kgo").disabled=false;$("#kin").disabled=true;i=-1;return}
+  $("#kin").value="";$("#kin").disabled=true;$("#kgo").disabled=true;$("#ks").textContent="●";await wait(600);if(id!==runId)return;
+  $("#ks").textContent=trials[i][0];await wait(2000);if(id!==runId)return;$("#ks").textContent=`Card ${i+1}/8 · type it`;$("#kin").disabled=false;$("#kin").focus();$("#kgo").disabled=false;$("#kgo").textContent="Submit";};
+ const submit=()=>{const want=trials[i][0].replace(/-/g,""),got=$("#kin").value.toUpperCase().replace(/[^A-Z_]/g,"");let s=0;for(let k=0;k<9;k++)if(got[k]===want[k])s++;score[trials[i][1]]+=s;$("#kout").textContent=`Card ${i+1}: ${s}/9 letters in the right position`;i++;next()};
+ $("#kgo").onclick=()=>{if(!trials||i===-1){trials=make();i=0;score=[0,0];$("#kout").textContent="";next()}else submit()};
+ $("#kin").onkeydown=e=>{if(e.key==="Enter"&&!$("#kin").disabled)submit()};
+},
+miqLab(el){
+ const items=[["Visual","The sun setting over the sea"],["Auditory","A pressure cooker whistle"],["Gustatory","Biting into a raw lemon"],["Olfactory","Wet earth after the first rain"],["Tactual","Running your hand over velvet"],["Organic","The feeling of being very hungry"]];
+ const sc=["0 · no image","1 · dim","2 · somewhat clear","3 · just clear","4 · fairly vivid","5 · very clear & vivid"];
+ el.innerHTML=`<p>Feel how the MIQ works: one sample item per sub-test (not the real items). Close your eyes, imagine it, rate it on the 0–5 scale.</p>
+ <div class="tbl"><table><tbody>${items.map(([m,t],k)=>`<tr><td><b>${m}</b><br><span class="hint">${t}</span></td><td><select id="mq${k}" aria-label="${m} rating">${sc.map((s,v)=>`<option value="${v}" ${v===3?"selected":""}>${s}</option>`).join("")}</select></td></tr>`).join("")}</tbody></table></div>
+ <div class="out" id="mout"></div>`;
+ const upd=()=>{const v=items.map((_,k)=>+$("#mq"+k).value),best=items[v.indexOf(Math.max(...v))][0];$("#mout").innerHTML=`Your strongest modality here: <b>${best}</b>. In the real test each sub-test has 15 items, so a sub-test is out of 75 and the full test out of 450.`};
+ el.querySelectorAll("select").forEach(s=>s.onchange=upd);upd();
+},
+solatLab(el){
+ const P=[["I like to solve problems by looking at the whole picture","I like to solve problems step by step"],["I remember faces easily","I remember names easily"],["I prefer drawing or diagrams","I prefer written instructions"],["I go with hunches","I go with logic"],["I like open-ended tasks","I like tasks with clear rules"]];
+ el.innerHTML=`<p>Try the SOLAT scoring rule on 5 sample pairs (not real items). Tick A, B, both, or neither.</p>
+ <div class="tbl"><table><thead><tr><th>#</th><th>Statement A</th><th>Statement B</th></tr></thead><tbody>${P.map(([a,b],k)=>`<tr><td>${k+1}</td><td><label><input type="checkbox" id="sa${k}"> ${a}</label></td><td><label><input type="checkbox" id="sb${k}"> ${b}</label></td></tr>`).join("")}</tbody></table></div><div class="out" id="sout"></div>`;
+ const upd=()=>{let R=0,L=0,W=0;P.forEach((_,k)=>{const a=$("#sa"+k).checked,b=$("#sb"+k).checked;if(a&&b)W++;else if(a)R++;else if(b)L++});const m=Math.max(R,L,W);const d=m===0?"tick some boxes":[R===m?"Right":null,L===m?"Left":null,W===m?"Whole":null].filter(Boolean).join(" / ");$("#sout").innerHTML=`R = <b>${R}</b> · L = <b>${L}</b> · W = <b>${W}</b> → dominance: <span class="verdict">${d}</span>`};
+ el.querySelectorAll("input").forEach(s=>s.onchange=upd);upd();
+},
+stenLab(el){
+ el.innerHTML=`<p>Drag the sten to see how the record interprets it.</p><div class="row"><label for="st" class="hint">Sten</label><input type="range" id="st" min="1" max="10" value="7" style="flex:1"><b id="stv" class="mono">7</b></div><div class="out" id="sto"></div>`;
+ const upd=()=>{const v=+$("#st").value;$("#stv").textContent=v;$("#sto").innerHTML=`Sten ${v} → <span class="verdict">${v<=4?"Low":v<=6?"Average":"High"}</span> <span class="hint">(mean 5.5; the record calls 1–4 low, 5–6 average, 7+ high)</span>`};
+ $("#st").oninput=upd;upd();
+},
+epqLab(el){
+ el.innerHTML=`<p>Enter raw scores and gender to apply the cut-offs from the record.</p>
+ <div class="row"><label>E raw <input type="number" id="er" min="0" max="23" value="10" style="width:80px"></label><label>N raw <input type="number" id="nr" min="0" max="24" value="4" style="width:80px"></label><label>Lie raw <input type="number" id="lr" min="0" max="21" value="5" style="width:80px"></label>
+ <span class="seg" role="group" aria-label="Gender"><button aria-pressed="true" data-g="f">Female</button><button aria-pressed="false" data-g="m">Male</button></span></div><div class="out" id="eo"></div>`;
+ let g="f";
+ const upd=()=>{const e=+$("#er").value,n=+$("#nr").value,l=+$("#lr").value;const E=e>=17?"Extravert":e>=8?"Ambivert":"Introvert",N=n>=14?"High neuroticism":n>=5?"Average":"Well balanced",bad=l>=(g==="m"?7:8);
+  $("#eo").innerHTML=`E: <span class="verdict">${E}</span> · N: <span class="verdict">${N}</span><br>Lie: ${bad?`<b style="color:var(--bad)">${l} is ≥ ${g==="m"?7:8} → reject clinically</b> (fine for academic practice)`:`<b style="color:var(--good)">valid</b>`}`};
+ el.querySelectorAll("input").forEach(i=>i.oninput=upd);
+ el.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{g=b.dataset.g;el.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));upd()});upd();
+},
+neoLab(el){
+ const D=["Neuroticism","Extraversion","Openness","Agreeableness","Conscientiousness"];
+ el.innerHTML=`<p>Move the T-scores (mean 50, SD 10) to see the band. Bands follow the record's interpretations: 38 low, 47 average, 59 high, 66 very high. Check your manual for exact cut-offs.</p>
+ ${D.map((d,k)=>`<div class="row"><label for="nt${k}" style="width:150px">${d}</label><input type="range" id="nt${k}" min="20" max="80" value="${[47,66,59,38,47][k]}" style="flex:1"><span id="nb${k}" class="verdict" style="min-width:150px"></span></div>`).join("")}`;
+ const band=t=>t<=34?"Very low":t<=44?"Low":t<=55?"Average":t<=65?"High":"Very high";
+ const upd=()=>D.forEach((_,k)=>{const t=+$("#nt"+k).value;$("#nb"+k).textContent=`T ${t} · ${band(t)}`});
+ el.querySelectorAll("input").forEach(i=>i.oninput=upd);upd();
+},
+bellLab(el){
+ const N={Home:{m:[1,3,11,16],f:[1,3,12,17]},Health:{m:[1,3,8,13],f:[1,4,9,14]},Social:{m:[2,6,15,20],f:[4,8,19,24]},Emotional:{m:[1,3,11,15],f:[2,6,15,20]},Occupational:{m:[1,4,13,17],f:[1,4,13,17]},Total:{m:[8,21,47,60],f:[16,30,58,71]}};
+ const lab=["Excellent","Good","Average","Unsatisfactory","Very unsatisfactory"],soc=["Very aggressive","Aggressive","Average","Retiring","Very retiring"];
+ el.innerHTML=`<p>Norms checker using the table in your record.</p><div class="row"><select id="ba" aria-label="Area">${Object.keys(N).map(k=>`<option>${k}</option>`).join("")}</select>
+ <span class="seg" role="group" aria-label="Gender"><button aria-pressed="true" data-g="f">Women</button><button aria-pressed="false" data-g="m">Men</button></span>
+ <label>Score <input type="number" id="bs" min="0" max="160" value="10" style="width:80px"></label></div><div class="out" id="bo"></div>
+ <details><summary class="hint">Show full norms table</summary><div class="tbl"><table><thead><tr><th>Area</th><th>Band</th><th>Men</th><th>Women</th></tr></thead><tbody>${Object.entries(N).map(([a,v])=>(a==="Social"?soc:lab).map((b,k)=>`<tr><td>${k?"":a}</td><td>${b}</td><td>${k===0?"0–"+v.m[0]:k<4?(v.m[k-1]+1)+"–"+v.m[k]:"Above "+v.m[3]}</td><td>${k===0?"0–"+v.f[0]:k<4?(v.f[k-1]+1)+"–"+v.f[k]:"Above "+v.f[3]}</td></tr>`).join("")).join("")}</tbody></table></div></details>`;
+ let g="f";
+ const upd=()=>{const a=$("#ba").value,s=+$("#bs").value,c=N[a][g];let k=c.findIndex(x=>s<=x);if(k<0)k=4;$("#bo").innerHTML=`${a} score ${s} (${g==="m"?"men":"women"}) → <span class="verdict">${(a==="Social"?soc:lab)[k]}</span>`};
+ $("#ba").onchange=upd;$("#bs").oninput=upd;
+ el.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{g=b.dataset.g;el.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));upd()});upd();
+}
+};
+
+/* ---------- Study view ---------- */
+const U=[...INTROS,...EXPS];
+const PER=["personality","pf16","epq","neo","bell"];
+const col=u=>PER.includes(u.id)?["var(--per)","var(--per-soft)"]:["var(--cog)","var(--cog-soft)"];
+const setAcc=([a,s])=>{document.documentElement.style.setProperty("--accent",a);document.documentElement.style.setProperty("--accent-soft",s)};
+let done=new Set(store.get("pl-done",[])),view="intro";
+const cur=store.get("pl-cur",{intro:"cognition",exp:"cueing"});
+if(!INTROS.some(u=>u.id===cur.intro))cur.intro="cognition";
+if(!EXPS.some(u=>u.id===cur.exp))cur.exp="cueing";
+const SECS=[["intro","Introduction"],["aim","Aim & plan"],["mat","Materials & variables"],["proc","Procedure"],["prec","Precautions"],["score","Scoring & norms"],["res","Results & discussion"],["rap","Rapport"],["lab","Try it"]];
+
+function prog(){$("#prog").textContent=`${done.size}/${U.length} topics done`}
+function rail(){
+ const list=view==="intro"?INTROS:EXPS;
+ $("#rail").innerHTML=`<div class="grp">${view==="intro"?"Viva voce intros":"Experiments"}</div>`+list.map(u=>`<button data-id="${u.id}" style="--c:${col(u)[0]}" aria-current="${u.id===cur[view]}"><span class="n">${u.kind==="exp"?"Exp "+u.n:u.n}</span><span>${u.name}</span>${done.has(u.id)?'<span class="tick">✓</span>':'<span></span>'}</button>`).join("");
+}
+const li=a=>`<ul class="pts">${a.map(x=>`<li>${x}</li>`).join("")}</ul>`;
+const sec=(id,k,title,html)=>`<section class="sec" id="s-${id}"><div class="eyebrow">Section ${k}</div><h3>${title}</h3>${html}</section>`;
+function rapportList(e){return `<div class="rlist">${e.rapport.map((r,k)=>`<div class="rq"><span class="rn">${k+1}</span><div><span class="chip">${r[0]}</span><p class="say">${r[1]}</p><p class="hint">Links to: ${r[2]}</p></div></div>`).join("")}</div><div class="tip"><b>Careful.</b> ${e.rapportNote}</div>`}
+
+function page(){
+ const list=view==="intro"?INTROS:EXPS,i=list.findIndex(u=>u.id===cur[view]),u=list[i];
+ setAcc(col(u));runId++;
+ let h=`<div class="eyebrow">${u.kind==="exp"?`Experiment ${u.n} · ${PER.includes(u.id)?"Personality":"Cognition"}`:"Viva voce introduction"}</div><h2>${u.name}</h2>
+ <div class="plate">${ART[u.art]()}<div class="cap"><span>${u.cap}</span>${u.id==="cognition"?`<span class="seg" role="group" aria-label="Attention model"><button aria-pressed="true" data-m="">Broadbent</button><button aria-pressed="false" data-m="treisman">Treisman</button><button aria-pressed="false" data-m="late">Deutsch-Norman</button></span>`:""}</div></div>`;
+ if(u.kind==="intro"){
+  h+=`<div class="reading">${u.body}</div>`;
+  if(u.lab)h+=`<div class="lab"><h3>Try it yourself</h3><div id="labbox"></div></div>`;
+ }else{
+  h+=`<div class="secbar" role="navigation" aria-label="Sections">${SECS.map(([id,t],k)=>`<button data-s="${id}">${k+1}. ${t}</button>`).join("")}</div>`;
+  h+=sec("intro",1,"Introduction",`<div class="reading">${u.intro}</div>`);
+  h+=sec("aim",2,"Aim, hypothesis & plan",`<dl class="terms"><dt>Aim</dt><dd>${u.aim}</dd>${u.hyp?`<dt>Hypothesis</dt><dd>${u.hyp}</dd>`:""}<dt>Plan</dt><dd>${u.plan}</dd></dl>`);
+  h+=sec("mat",3,u.vars?"Materials & variables":"Materials required",`<h4>Materials required</h4>${li(u.materials)}${u.vars?`<h4>Variables</h4><dl class="terms"><dt>Independent variable</dt><dd>${u.vars.iv}</dd><dt>Dependent variable</dt><dd>${u.vars.dv}</dd></dl><h4>Intervening variables / controls</h4>${li(u.vars.ctrl)}`:""}`);
+  h+=sec("proc",4,"Procedure",`<h4>Instructions to the subject</h4><blockquote>${u.instr}</blockquote><h4>Steps</h4><ol class="steps">${u.proc.map(x=>`<li>${x}</li>`).join("")}</ol>`);
+  h+=sec("prec",5,"Precautions",li(u.prec));
+  h+=sec("score",6,"Scoring & norms",u.scoring);
+  h+=sec("res",7,"Results & discussion",u.results);
+  h+=sec("rap",8,"Rapport-building questions",`<p class="reading">Imaginary and situational questions tied to what this experiment measures. Pick 2–3 before you start.</p>${rapportList(u)}`);
+  h+=sec("lab",9,"Try it yourself",`<div class="lab" style="margin:0"><div id="labbox"></div></div>`);
+ }
+ if(u.tip)h+=`<div class="tip"><b>Exam tip.</b> ${u.tip}</div>`;
+ h+=`<div class="done-row"><button class="btn ${done.has(u.id)?"":"primary"}" id="mark">${done.has(u.id)?"Done ✓":"Mark as done"}</button><button class="btn" id="drill">Flashcards for this</button>${list[i+1]?`<button class="btn" id="next">Next: ${list[i+1].name} →</button>`:""}</div>`;
+ $("#unit").innerHTML=h;
+ if(u.lab)LABS[u.lab]($("#labbox"));
+ if(u.id==="cognition")$("#unit .plate .seg").onclick=e=>{const b=e.target.closest("button");if(!b)return;$("#attsvg").setAttribute("class","art att "+b.dataset.m);$("#unit .plate .seg").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b))};
+ const sb=$("#unit .secbar");if(sb)sb.onclick=e=>{const b=e.target.closest("button");if(b)$("#s-"+b.dataset.s).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})};
+ if(matchMedia("(prefers-reduced-motion: reduce)").matches)document.querySelectorAll("#unit svg").forEach(s=>s.pauseAnimations&&s.pauseAnimations());
+ $("#mark").onclick=()=>{done.has(u.id)?done.delete(u.id):done.add(u.id);store.set("pl-done",[...done]);rail();page();prog()};
+ $("#drill").onclick=()=>{filt=u.id;buildDeck();mode("cards")};
+ if(list[i+1])$("#next").onclick=()=>{go(list[i+1].id);scrollTo(0,0)};
+}
+function go(id){cur[view]=id;store.set("pl-cur",cur);rail();page()}
+$("#rail").onclick=e=>{const b=e.target.closest("button");if(b){go(b.dataset.id);scrollTo(0,0)}};
+
+/* ---------- Flashcards ---------- */
+const CARDS=[
+["Cognitive psychology studies…","Mental processes: perception, attention, memory, language, problem-solving, thinking. Mind as an information-processing system.","cognition"],
+["Sensation vs perception","Sensation = detecting stimuli. Perception = organising and interpreting them (bottom-up + top-down).","cognition"],
+["Four Gestalt principles","Proximity, similarity, closure, continuity (Wertheimer, Koffka, Köhler).","cognition"],
+["Affordance","Gibson: what an object lets you do (a chair affords sitting).","cognition"],
+["Gregory's theory","Constructivist, top-down: perception is hypothesis testing.","cognition"],
+["Broadbent vs Treisman","Broadbent: early filter blocks unattended info. Treisman: filter only attenuates it, so your name can break through.","cognition"],
+["Kahneman's model","Capacity model: attention is a flexible pool of resources, not a filter.","cognition"],
+["Hick's law","Decision time increases logarithmically with the number of choices.","cognition"],
+["Three barriers to problem solving","Functional fixedness, mental set, confirmation bias.","cognition"],
+["Bartlett on memory","Remembering is reconstructive, shaped by schemas.","memory"],
+["Modal model","Atkinson & Shiffrin (1968): sensory → STM → LTM, plus control processes like rehearsal.","memory"],
+["STM duration and capacity","20–30 s without rehearsal; 7 ± 2 chunks (Miller, 1956).","memory"],
+["Iconic vs echoic memory","Visual sensory memory (sparkler trail, Sperling) vs auditory sensory memory.","memory"],
+["Four parts of working memory","Central executive, phonological loop, visuospatial sketchpad, episodic buffer (added 2000).","memory"],
+["Episodic vs semantic","Personal events with time/place vs general facts (Tulving).","memory"],
+["Levels of processing","Craik & Lockhart 1972: structural → phonemic → semantic. Deeper = better retention.","memory"],
+["Primacy vs recency","First items rehearsed into LTM; last items still in STM. U-shaped curve.","memory"],
+["Maintenance vs elaborative rehearsal","Plain repetition vs linking to meaning.","memory"],
+["Free, serial and cued recall","Any order / exact order / with a hint.","cueing"],
+["Encoding specificity","Tulving & Thomson 1973: a cue works only if it matches how info was encoded.","cueing"],
+["Godden & Baddeley (1975)","Divers recalled better in the environment where they learned (context-dependent memory).","cueing"],
+["Tulving & Pearlstone (1966)","Category cues at test boosted recall over free recall.","cueing"],
+["Cueing experiment: IV and DV","IV: presence of cues. DV: number of words recalled.","cueing"],
+["Cueing: exposure, recall time, rest","2 s per word · 3 min recall · 5 min rest between series.","cueing"],
+["Who named the chunk?","George Miller (1956), 'The Magical Number Seven, Plus or Minus Two'.","chunking"],
+["Chase & Simon (1973)","Chess experts recall real positions far better, but not random boards.","chunking"],
+["Chunking: average span formula","Total letters recalled ÷ 10 strings.","chunking"],
+["Chunking letter pattern","cvc: consonant-vowel-consonant trigrams.","chunking"],
+["Dual coding theory","Paivio: verbal and imagery codes; two routes to recall.","miq"],
+["The imagery debate","Kosslyn (depictive, picture-like) vs Pylyshyn (propositional, abstract).","miq"],
+["MIQ rating scale","5 very clear & vivid · 4 fairly vivid · 3 just clear · 2 somewhat clear · 1 dim · 0 no image.","miq"],
+["MIQ sub-tests","Visual, auditory, gustatory, olfactory, tactual, organic. 15 items each.","miq"],
+["SOLAT developers","Torrance et al. (1977); Indian version D. Venkataraman (1994), 50 items.","solat"],
+["SOLAT scoring","(a) = R, (b) = L, both = W (integrated). Highest category = dominance.","solat"],
+["Main limitation of SOLAT","Left/right-brained is an oversimplification; it measures preference, not brain activity.","solat"],
+["Allport's 1937 definition","The dynamic organization within the individual of those psychophysical systems that determine his unique adjustments to the environment.","personality"],
+["16PF factors with Q codes","Q1 openness to change, Q2 self-reliance, Q3 perfectionism, Q4 tension.","pf16"],
+["Which 16PF factor is reasoning?","Factor B, scored 0 or 1 (right/wrong).","pf16"],
+["Four second-order factors in the record","Extraversion, anxiety, tough poise, independence.","pf16"],
+["Sten scale","1–10, mean 5.5.","pf16"],
+["P-E-N + L","Psychoticism, Extraversion, Neuroticism + Lie scale.","epq"],
+["EPQ history","MPI → EPI (+ Lie) → EPQ 1975 (+ P) → EPQ-R 1985.","epq"],
+["EPQ-R item counts","Full 100 items; short form 48 (12 per scale).","epq"],
+["Lie score rejection","7+ for men, 8+ for women.","epq"],
+["NEO-FFI-3 basics","60 items, 5 domains × 12, ages 12+, Form S (self) and Form R (observer).","neo"],
+["Basic tendencies vs characteristic adaptations","Five-Factor Theory: biological traits vs how they show up in habits and attitudes.","neo"],
+["Bell's 5 areas","Home, health, social, emotional, occupational.","bell"],
+["Bell's: high score means…","Unsatisfactory adjustment. Social: high = retiring, low = aggressive.","bell"],
+["Bell's reliability","0.81–0.94, Spearman-Brown, employed people aged 23–28.","bell"],
+["Adjustment disorder onset","Within 3 months of the stressor; affects 2–8%.","bell"],
+["Why use a stopwatch?","To time presentation, recall, response and rest the same way for everyone, so results are standardised and comparable.","viva"],
+["Standardisation","Same instructions and procedure for every participant. Reduces examiner-caused variation.","viva"],
+["z-score formula","z = (X − Mean) / SD. Positive = above the mean.","viva"],
+["T-score","Mean 50, SD 10. T = 50 + 10z.","viva"],
+["Sten bands","1–2 very low · 3–4 low · 5–6 average · 7–8 high · 9–10 very high (mean 5.5, SD 2).","viva"],
+["What a percentile means","% of the norm group scoring at or below you. Not % marks.","viva"],
+["Eysenck on extraversion biology","Extraverts have lower baseline cortical arousal, so they seek stimulation.","viva"],
+["16PF MD","Motivational Distortion (Forms C/D): flags faking good. High MD doesn't automatically invalidate the profile.","viva"],
+["Trait vs state","Stable tendency vs temporary condition.","viva"],
+["Can a test diagnose on its own?","No. Combine with interview, history, observation and context.","viva"]
+];
+let filt="all",deck=[],ci=0,again=[];
+function buildDeck(list){deck=list||shuffle(CARDS.filter(c=>filt==="all"||c[2]===filt));ci=0;again=[];drawCard()}
+function drawCard(){
+ document.documentElement.style.setProperty("--accent","var(--cog)");document.documentElement.style.setProperty("--accent-soft","var(--cog-soft)");
+ let h=`<div class="eyebrow">Flashcards</div><h2>Recall first, then flip</h2><div class="row"><select id="dsel" aria-label="Unit">${`<option value="all">All units (${CARDS.length})</option>`+U.map(u=>`<option value="${u.id}" ${filt===u.id?"selected":""}>${u.n} ${u.name}</option>`).join("")}</select><button class="btn" id="shuf">Shuffle</button></div>`;
+ if(!deck.length)h+=`<p class="hint">No cards for this unit yet.</p>`;
+ else if(ci>=deck.length)h+=`<div class="face" style="position:static;margin:16px 0;min-height:180px"><div class="q">Deck done</div><div>${deck.length-again.length} of ${deck.length} known.${again.length?` ${again.length} to review.`:" Clean sweep."}</div></div><div class="row">${again.length?'<button class="btn primary" id="redo">Review the ones I missed</button>':""}<button class="btn" id="restart">Start over</button></div>`;
+ else{const c=deck[ci],u=U.find(x=>x.id===c[2]);h+=`<div class="bar" style="margin-top:16px"><i style="width:${ci/deck.length*100}%"></i></div>
+  <div class="card" id="card" tabindex="0" role="button" aria-label="Flip card"><div class="card-in"><div class="face"><span class="eyebrow">${u.name} · ${ci+1}/${deck.length}</span><div class="q">${c[0]}</div><span class="hint">Tap or press Space to flip</span></div><div class="face back"><span class="eyebrow">Answer</span><div>${c[1]}</div></div></div></div>
+  <div class="row"><button class="btn" id="miss">Still learning (←)</button><button class="btn primary" id="got">Got it (→)</button></div>`}
+ $("#cards").innerHTML=h;
+ $("#dsel").onchange=e=>{filt=e.target.value;buildDeck()};$("#shuf").onclick=()=>buildDeck();
+ if(!deck.length)return;
+ if(ci>=deck.length){$("#restart").onclick=()=>buildDeck();if(again.length)$("#redo").onclick=()=>buildDeck(shuffle(again));return}
+ $("#card").onclick=()=>$("#card").classList.toggle("flip");
+ $("#got").onclick=()=>{ci++;drawCard()};$("#miss").onclick=()=>{again.push(deck[ci]);ci++;drawCard()};
+}
+document.addEventListener("keydown",e=>{if($("#cards").hidden||!$("#card")||e.target.matches("input,select,textarea"))return;if(e.code==="Space"){e.preventDefault();$("#card").classList.toggle("flip")}if(e.key==="ArrowRight")$("#got")?.click();if(e.key==="ArrowLeft")$("#miss")?.click()});
+
+/* ---------- Viva quiz ---------- */
+const QUIZ=[
+["In the cueing experiment, what is the independent variable?",["Number of words recalled","Presence of cues","Exposure time","Rest period"],1,"IV = presence of cues in Series 2. DV = words recalled."],
+["How long is each word exposed in the cueing experiment?",["1 second","2 seconds","3 seconds","5 seconds"],1,"2 seconds per word, read in an even tone."],
+["List B in the cueing experiment has…",["30 random words","5 categories × 6 words","10 categories × 3 words","Nonsense syllables"],1,"30 words in 5 categories of 6."],
+["Divers recalling better in the same environment shows…",["Encoding specificity in context","Levels of processing","Chunking","Primacy"],0,"Godden & Baddeley (1975): context-dependent memory, a form of encoding specificity."],
+["Who proposed spreading activation?",["Tulving & Thomson","Craik & Lockhart","Collins & Loftus","Baddeley & Hitch"],2,"Collins & Loftus, 1975."],
+["Chunking average span is calculated as…",["Total letters ÷ 9","Total letters ÷ 10","Chunked − non-chunked","Total letters × 2"],1,"Total recalled in a series ÷ 10 strings."],
+["Chess experts lost their memory advantage when…",["Time was shorter","Pieces were placed randomly","Boards were bigger","They were tired"],1,"Chase & Simon 1973: no meaningful chunks on random boards."],
+["Miller's key distinction was between a chunk and a…",["Byte","Bit","Trace","Schema"],1,"Chunk vs bit of information."],
+["Which is NOT an MIQ sub-test?",["Gustatory","Organic","Kinaesthetic","Tactual"],2,"The MIQ sub-tests are visual, auditory, gustatory, olfactory, tactual and organic."],
+["On the MIQ, 'just clear' scores…",["2","3","4","1"],1,"5 vivid, 4 fairly vivid, 3 just clear, 2 somewhat clear, 1 dim, 0 none."],
+["Kosslyn's view of imagery is…",["Propositional","Depictive","Dual coding","Behaviourist"],1,"Depictive: images hold spatial info. Pylyshyn = propositional."],
+["In SOLAT, ticking statement (a) counts as…",["Left","Right","Whole","Not scored"],1,"(a) = R, (b) = L, both = W."],
+["The Indian SOLAT was standardised by…",["Torrance","Venkataraman","Sperry","Gazzaniga"],1,"D. Venkataraman (1994), 50 items."],
+["Which working memory part was added later?",["Central executive","Phonological loop","Episodic buffer","Visuospatial sketchpad"],2,"Baddeley added the episodic buffer (2000)."],
+["The recency effect happens because…",["Items were rehearsed into LTM","Items are still in STM","Items were chunked","Items were semantic"],1,"Last items are still in short-term/working memory."],
+["Treisman's model says unattended messages are…",["Blocked","Attenuated","Fully analysed","Stored in LTM"],1,"Attenuated: turned down, not blocked."],
+["In 16PF, Factor B measures…",["Boldness","Reasoning","Warmth","Tension"],1,"B = reasoning, scored 0/1."],
+["16PF items are scored…",["0 or 1 only","0, 1 or 2","1 to 5","1 to 10"],1,"0, 1 or 2, except Factor B (0/1)."],
+["Q3 in the 16PF is…",["Openness to change","Self-reliance","Perfectionism","Tension"],2,"Q1 openness, Q2 self-reliance, Q3 perfectionism, Q4 tension."],
+["Which inventory first added the Lie scale?",["MPI","EPI","EPQ","EPQ-R"],1,"EPI added the Lie scale; EPQ added P."],
+["The EPQ-R short form has…",["48 items","60 items","100 items","187 items"],0,"48 items, 12 per scale."],
+["A woman's EPQ-R lie score is rejected at…",["6+","7+","8+","10+"],2,"8+ for women, 7+ for men."],
+["An EPQ extraversion raw score of 12 means…",["Introvert","Ambivert","Extravert","Invalid"],1,"8–16 = ambivert."],
+["NEO-FFI-3 Form R is…",["Revised form","Observer rating","Research form","Reverse-scored"],1,"R = rater (peer, spouse, expert). S = self."],
+["How many items per domain in NEO-FFI-3?",["10","12","15","20"],1,"5 domains × 12 = 60."],
+["In Bell's inventory, a high health score means…",["Excellent health adjustment","Poor health adjustment","Average","Aggressive"],1,"High = unsatisfactory adjustment."],
+["A low social score in Bell's inventory is called…",["Excellent","Retiring","Aggressive","Unsatisfactory"],2,"Social: low = aggressive, high = retiring."],
+["In Bell's scoring, a '?' answer gets…",["1","0.5","Not scored","2"],2,"Question marks are not scored."],
+["Mean 50, SD 10, raw 70. What's z?",["+0.7","+1","+2","+20"],2,"z = (70 − 50) / 10 = +2."],
+["A z-score of −1 is a T-score of…",["40","45","49","60"],0,"T = 50 + 10(−1) = 40."],
+["The 75th percentile means…",["75% marks","At or above about 75% of the norm group","Top 25 people","3 SD above mean"],1,"Percentile = relative position, not marks."],
+["A sten of 8 is usually…",["Low","Average","High","Very low"],2,"7–8 high, 9–10 very high."],
+["What does 16PF MD indicate?",["Memory deficit","Possible faking good","Mental disorder","Mean deviation"],1,"Motivational Distortion: overly favourable self-presentation."],
+["The best observation note is…",["Was careless","Looked away several times during presentation","Seemed lazy","Didn't care"],1,"Write objective behaviour, not judgements."],
+["You forget an exact cut-off in the viva. You should…",["Guess confidently","State the principle and say the cut-off is in the manual","Skip the question","Use another test's norms"],1,"The guide says: don't guess."],
+["Eysenck said extraverts have…",["Higher cortical arousal","Lower baseline cortical arousal","No arousal differences","Larger hippocampus"],1,"Lower arousal, so they seek stimulation."]
+];
+let qs=[],qi=0,right=0;
+function startQuiz(){qs=shuffle(QUIZ).slice(0,15).map(q=>({q:q[0],o:shuffle(q[1].map((t,k)=>({t,ok:k===q[2]}))),why:q[3]}));qi=0;right=0;drawQ()}
+function drawQ(){
+ if(qi>=qs.length){const pct=Math.round(right/qs.length*100),best=Math.max(pct,store.get("pl-best",0));store.set("pl-best",best);
+  $("#quiz").innerHTML=`<div class="eyebrow">Result</div><div class="score">${right}/${qs.length}</div><p>${pct>=80?"Viva ready.":pct>=50?"Getting there. Re-read the units you missed.":"Go through the units first, then retry."} Best: ${best}%.</p><button class="btn primary" id="qa">New quiz</button>`;$("#qa").onclick=startQuiz;return}
+ const q=qs[qi];let answered=false;
+ $("#quiz").innerHTML=`<div class="eyebrow">Viva question ${qi+1} of ${qs.length} · score ${right}</div><div class="bar" style="margin:10px 0"><i style="width:${qi/qs.length*100}%"></i></div><h2 style="font-size:1.5rem">${q.q}</h2><div class="opts">${q.o.map((o,k)=>`<button data-k="${k}">${o.t}</button>`).join("")}</div><p class="hint" id="why"></p><div class="row" id="nx"></div>`;
+ $("#quiz .opts").onclick=e=>{const b=e.target.closest("button");if(!b||answered)return;answered=true;const p=q.o[+b.dataset.k];
+  [...$("#quiz .opts").children].forEach((x,k)=>{if(q.o[k].ok)x.classList.add("right");x.disabled=true});if(p.ok)right++;else b.classList.add("wrong");
+  $("#why").textContent=(p.ok?"Correct. ":"Not quite. ")+q.why;$("#nx").innerHTML=`<button class="btn primary" id="nq">${qi+1<qs.length?"Next":"See result"}</button>`;$("#nq").onclick=()=>{qi++;drawQ()};$("#nq").focus()};
+}
+
+/* ---------- Rapport bank ---------- */
+let rapFilter="all";
+function rapport(){
+ setAcc(["var(--per)","var(--per-soft)"]);
+ const list=EXPS.filter(e=>rapFilter==="all"||e.id===rapFilter);
+ $("#rapport").innerHTML=`<div class="rapport-head"><div><div class="eyebrow">Before every practical</div><h2>Rapport question bank</h2><p class="reading">${EXPS.reduce((n,e)=>n+e.rapport.length,0)} imaginary and situational questions, 8–9 per experiment, each tied to the trait, factor or process that experiment measures.</p></div>
+ <div class="row"><select id="rsel" aria-label="Experiment"><option value="all">All experiments</option>${EXPS.map(e=>`<option value="${e.id}" ${rapFilter===e.id?"selected":""}>Exp ${e.n} · ${e.name}</option>`).join("")}</select><button class="btn primary" id="spin">Random question</button></div></div>
+ <div class="rcard" id="pick" hidden></div>
+ ${list.map(e=>`<section class="sec"><div class="eyebrow">Experiment ${e.n}</div><h3>${e.name}</h3>${rapportList(e)}</section>`).join("")}`;
+ $("#rsel").onchange=ev=>{rapFilter=ev.target.value;rapport()};
+ $("#spin").onclick=()=>{const pool=list.flatMap(e=>e.rapport.map(r=>[e,r])),[e,r]=pool[Math.random()*pool.length|0];const p=$("#pick");p.hidden=false;p.classList.add("on");p.innerHTML=`<span class="chip" style="align-self:start">Exp ${e.n} · ${r[0]}</span><p class="say">${r[1]}</p><p class="hint">Links to: ${r[2]}</p>`};
+}
+
+/* ---------- Modes ---------- */
+function mode(m){
+ document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.mode===m));
+ const study=m==="intro"||m==="exp";
+ $("#study").hidden=!study;["cards","quiz","rapport"].forEach(id=>$("#"+id).hidden=id!==m);
+ if(study){view=m;rail();page()}else runId++;
+ if(m==="rapport")rapport();
+ if(m==="cards")drawCard();
+ if(m==="quiz")setAcc(["var(--cog)","var(--cog-soft)"]);
+ scrollTo(0,0);
+}
+document.querySelector("nav").onclick=e=>{const b=e.target.closest("button");if(b)mode(b.dataset.mode)};
+const hh=()=>document.documentElement.style.setProperty("--hh",(innerWidth<=780?0:document.querySelector("header").offsetHeight)+"px");
+addEventListener("resize",hh);hh();
+prog();buildDeck();startQuiz();mode("intro");
+</script>
